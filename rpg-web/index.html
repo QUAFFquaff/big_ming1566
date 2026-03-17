@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>沉浸式权谋 RPG（Demo）</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand__title">沉浸式权谋 RPG</div>
+          <div class="brand__subtitle">选你的角色 · 做你的选择 · 改写结局</div>
+        </div>
+        <div class="stats" id="stats"></div>
+      </header>
+
+      <main class="main">
+        <section class="panel">
+          <div class="panel__head">
+            <div class="chapter" id="chapter"></div>
+            <div class="panel__actions">
+              <button class="btn btn--ghost" id="btnNew">新开一局</button>
+              <button class="btn btn--ghost" id="btnSave">保存</button>
+              <button class="btn btn--ghost" id="btnLoad">读取</button>
+              <button class="btn btn--ghost" id="btnExport">导出存档</button>
+              <label class="btn btn--ghost file">
+                导入存档
+                <input type="file" id="importFile" accept="application/json" />
+              </label>
+            </div>
+          </div>
+
+          <article class="scene">
+            <h1 class="scene__title" id="sceneTitle"></h1>
+            <div class="scene__text" id="sceneText"></div>
+          </article>
+
+          <section class="choices">
+            <div class="choices__title">你的选择</div>
+            <div class="choices__list" id="choices"></div>
+          </section>
+        </section>
+
+        <aside class="sidebar">
+          <section class="card">
+            <div class="card__title">角色</div>
+            <div class="card__body" id="roleCard"></div>
+          </section>
+
+          <section class="card">
+            <div class="card__title">日志</div>
+            <div class="card__body log" id="log"></div>
+          </section>
+
+          <section class="card">
+            <div class="card__title">提示</div>
+            <div class="card__body hint">
+              <div>这是一个零构建（无 npm）可直接运行的 Demo。</div>
+              <div>双击选择按钮也不会跳过动画；每次选择都会写入日志与存档。</div>
+              <div class="hint__small">如需发布，使用任意静态托管即可（GitHub Pages / Nginx / IIS）。</div>
+            </div>
+          </section>
+        </aside>
+      </main>
+
+      <footer class="footer">
+        <div class="footer__left">本 Demo 仅示例玩法结构：剧情节点、条件分支、属性变化、存档系统。</div>
+        <div class="footer__right">
+          <span class="pill">本地存档：localStorage</span>
+          <span class="pill" id="buildInfo"></span>
+        </div>
+      </footer>
+    </div>
+
+    <script src="./src/content.js"></script>
+    <script src="./src/engine.js"></script>
+    <script src="./src/storage.js"></script>
+    <script src="./src/main.js"></script>
+  </body>
+</html>
