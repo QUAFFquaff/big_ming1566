@@ -1,617 +1,982 @@
 (() => {
   const GAME_META = {
-  title: "《逐玉》视觉小说原型（前三章）",
-  build: "2026-03-18",
+    title: "《逐玉》视觉小说原型（前三章）",
+    build: "2026-03-19",
   };
 
   const STAT_DEFS = [
-  { key: "affection", label: "谢征好感", min: 0, max: 100 },
-  { key: "suspicion", label: "身份怀疑", min: 0, max: 100 },
-  { key: "reputation", label: "名声", min: 0, max: 100 },
-  { key: "rumor", label: "流言压力", min: 0, max: 100 },
-  { key: "property", label: "家产压力", min: 0, max: 100 },
-  { key: "danger", label: "危险度", min: 0, max: 100 },
-  { key: "money", label: "银钱", min: 0, max: 10 },
+    { key: "affection",  label: "谢征好感", min: 0, max: 100 },
+    { key: "suspicion",  label: "身份怀疑", min: 0, max: 100 },
+    { key: "reputation", label: "名声",     min: 0, max: 100 },
+    { key: "rumor",      label: "流言压力", min: 0, max: 100 },
+    { key: "property",   label: "家产压力", min: 0, max: 100 },
+    { key: "danger",     label: "危险度",   min: 0, max: 100 },
+    { key: "money",      label: "银钱",     min: 0, max: 10  },
   ];
 
   const ROLES = [
-  {
-    id: "fan_changyu",
-    name: "樊长玉",
-    desc: "雪夜收摊，风波上门。你只是想守住铺子与家人，却被卷入一枚碎玉与一桩旧案。",
-    start: {
-      sceneId: "C1_N1",
-      stats: {
-        affection: 20,
-        suspicion: 0,
-        reputation: 45,
-        rumor: 10,
-        property: 20,
-        danger: 5,
-        money: 3,
+    {
+      id: "fan_changyu",
+      name: "樊长玉",
+      desc: "雪夜收摊，风波上门。你只是想守住铺子与家人，却被卷入一枚碎玉与一桩旧案。",
+      start: {
+        sceneId: "C1_N1",
+        stats: {
+          affection: 20,
+          suspicion: 0,
+          reputation: 45,
+          rumor: 10,
+          property: 20,
+          danger: 5,
+          money: 3,
+        },
+        flags: { have_jade: false, marriage: false, alliance: false },
       },
-      flags: { have_jade: false, marriage: false, alliance: false },
     },
-  },
   ];
 
-// Conditions (simple DSL):
-// - { stats: { renown: { gte: 50 } } }
-// - { flags: { upright: true } }
-// - { any: [cond1, cond2] }, { all: [...] }, { not: cond }
+  // Conditions DSL:
+  // { stats: { affection: { gte: 50 } } }
+  // { flags: { have_jade: true } }
+  // { any: [...] }, { all: [...] }, { not: cond }
+
   const SCENES = {
-  start: {
-    id: "start",
-    chapter: "开始",
-    title: "《逐玉》· 视觉小说原型",
-    text:
-      "你将扮演樊长玉。\n\n雪夜异响、重伤男子、碎裂玉佩与密信残页……\n你的每次选择都会改变关系、名声与风险，并影响后续章节走向。",
-    choices: [
-      { label: "开始故事", next: "C1_N1", setRole: "fan_changyu" },
-    ],
-  },
-  C1_N1: {
-    id: "C1_N1",
-    chapter: "第一章 · 风雪夜救人",
-    title: "后院异响",
-    image: "assets/cg/C1_N1.png",
-    text: "收摊将尽，雪落无声。\n\n你正要合上后门，忽听院外一声闷响，像是有人从墙头跌落。\n\n这条巷子素来不太平——你要不要去看？",
-    choices: [
-      { label: "查看异响", next: "C1_N2", log: "你提灯走向后院，想看清那声闷响从何而来。" },
-      {
-        label: "先锁门再查看",
-        next: "C1_N2",
-        effects: { stats: { suspicion: +1 } },
-        tags: ["谨慎+1"],
-        log: "你先把门闩扣牢，再提灯去看——谨慎，总能少吃亏。",
-      },
-    ],
-  },
 
-  C1_N2: {
-    id: "C1_N2",
-    chapter: "第一章 · 风雪夜救人",
-    title: "雪地发现伤者",
-    image: "assets/cg/C1_N2.png",
-    text:
-      "雪地里躺着一名男子，身上血迹被风雪糊成暗色。\n\n他右手死死攥着一枚碎裂玉佩，指节冻得发白。\n\n你若救他，便是把麻烦背进屋；若不救，今夜也许能睡得安稳。",
-    choices: [
-      {
-        label: "立刻施救",
-        next: "C1_N3A",
-        log: "你顾不得多想，把人背进屋里，先止血再说。",
-      },
-      {
-        label: "拖去柴房观察",
-        next: "C1_N3B",
-        log: "你把人拖进柴房，心里盘算：先藏起来，别引火烧身。",
-      },
-      {
-        label: "搜身确认身份",
-        next: "C1_N3C",
-        log: "你先搜了搜他身上，至少得知道自己要救的是谁。",
-      },
-    ],
-  },
-
-  C1_N3A: {
-    id: "C1_N3A",
-    chapter: "第一章 · 风雪夜救人",
-    title: "立刻施救",
-    image: "assets/cg/C1_N3A.png",
-    text:
-      "你把人背进屋内，火盆旁的热气让他微微颤了一下。\n\n止血、清理、包扎——你手法熟练，像做过很多次。\n\n他没死。这一点，似乎就够了。",
-    choices: [
-      {
-        label: "询问姓名",
-        next: "C1_N4",
-        effects: { stats: { affection: +15, reputation: +1 } },
-        tags: ["好感+15", "名声+1"],
-        log: "你问他姓名，语气尽量放轻。你救了他，也想知道他是谁。",
-      },
-      {
-        label: "隐瞒姓名避免惹祸",
-        next: "C1_N4",
-        effects: { stats: { affection: +10, suspicion: +1, reputation: +1 } },
-        tags: ["好感+10", "谨慎+1", "名声+1"],
-        log: "你没有追问太多。活下去比真相更要紧——至少今晚如此。",
-      },
-    ],
-  },
-
-  C1_N3B: {
-    id: "C1_N3B",
-    chapter: "第一章 · 风雪夜救人",
-    title: "拖去柴房观察",
-    image: "assets/cg/C1_N3B.png",
-    text:
-      "柴房里潮冷，草垛带着霉味。\n\n他被你拖进来时闷哼了一声，像是痛醒又昏。\n\n你站在门口犹豫：送药还是等天亮？",
-    choices: [
-      {
-        label: "深夜再送药",
-        next: "C1_N4",
-        effects: { stats: { affection: -5, suspicion: +1 } },
-        tags: ["好感-5", "谨慎+1"],
-        log: "你还是送了药。你不敢太靠近他，但也不想他死在你家柴房。",
-      },
-      {
-        label: "天亮再说",
-        next: "C1_N4",
-        effects: { stats: { affection: -5, suspicion: +1, danger: +1 } },
-        tags: ["好感-5", "谨慎+1", "危险+1"],
-        log: "你决定等天亮。可你也知道，夜里最容易出事。",
-      },
-    ],
-  },
-
-  C1_N3C: {
-    id: "C1_N3C",
-    chapter: "第一章 · 风雪夜救人",
-    title: "搜身确认身份",
-    image: "assets/cg/C1_N3C.png",
-    text:
-      "你摸到一块残玉，纹样精细，不像寻常人家之物。\n\n他衣襟内侧还藏着一页被撕碎的纸，上头只有几行模糊的字迹。\n\n你忽然明白：这人身上带着麻烦，且不小。",
-    choices: [
-      {
-        label: "归还残玉",
-        next: "C1_N4",
-        effects: { stats: { affection: -10 }, flags: { have_jade: false } },
-        tags: ["好感-10"],
-        log: "你把残玉放回他手边。你想保持距离，也想保住良心。",
-      },
-      {
-        label: "暂时藏起残玉",
-        next: "C1_N4",
-        effects: { stats: { affection: -10, suspicion: +2 }, flags: { have_jade: true } },
-        tags: ["好感-10", "怀疑+2", "持有残玉"],
-        log: "你把残玉藏起。你不知道它值不值命，但至少值一个答案。",
-      },
-    ],
-  },
-
-  C1_N4: {
-    id: "C1_N4",
-    chapter: "第一章 · 风雪夜救人",
-    title: "苏醒试探",
-    image: "assets/cg/C1_N4.png",
-    text:
-      "他短暂醒来，目光像刀一样扫过屋内。\n\n他只说自己遭人追杀，别的都含糊。\n\n你听得出，他在试探你，你也在试探他。",
-    choices: [
-      {
-        label: "相信其说辞",
-        next: "C1_N5",
-        effects: { stats: { affection: +5 } },
-        tags: ["好感+5"],
-        log: "你点头，装作只是好心收留。你想看看他会不会把你当成敌人。",
-      },
-      {
-        label: "追问来历",
-        next: "C1_N5",
-        effects: { stats: { suspicion: +2 } },
-        tags: ["怀疑+2"],
-        log: "你追问来历。你救人可以，但不想救来一把刀。",
-      },
-      {
-        label: "警告天亮必须离开",
-        next: "C1_N5",
-        effects: { stats: { affection: -3, reputation: -1 } },
-        tags: ["好感-3", "名声-1"],
-        log: "你警告他天亮就走。你害怕麻烦，但也怕自己心软。",
-      },
-    ],
-  },
-
-  C1_N5: {
-    id: "C1_N5",
-    chapter: "第一章 · 风雪夜救人",
-    title: "官差巡街",
-    image: "assets/cg/C1_N5.png",
-    text:
-      "外头忽然传来脚步与喝问声。\n\n“搜！通缉要犯，近日必藏于城中——”\n\n你心口一紧：他们找的，会不会就是你屋里这人？",
-    choices: [
-      {
-        label: "藏入地窖",
-        next: "C1_END",
-        effects: { stats: { danger: -1, suspicion: +1 } },
-        tags: ["危险-1", "谨慎+1"],
-        log: "你把他藏进地窖。你不确定这是不是对，但至少能拖过眼前这一关。",
-      },
-      {
-        label: "假称远房表兄",
-        next: "C1_END",
-        effects: { stats: { reputation: +1, danger: +1 } },
-        tags: ["名声+1", "危险+1"],
-        log: "你编了个身份。话说出口那一刻，你知道自己已经站边了。",
-      },
-      {
-        label: "让他独自应付",
-        next: "C1_END",
-        effects: { stats: { affection: -10, danger: +2 } },
-        tags: ["好感-10", "危险+2"],
-        log: "你退到一旁，让他自己应付。你保全了自己，却失了他的信任。",
-      },
-    ],
-  },
-
-  C1_END: {
-    id: "C1_END",
-    chapter: "第一章 · 风雪夜救人",
-    title: "章节结尾",
-    image: "assets/cg/C1_END.png",
-    text:
-      "巡街声渐远，雪却下得更紧。\n\n谢征暂时留在猪肉铺。\n你明白，今夜之后，你再难置身事外。",
-    choices: [{ label: "进入第二章", next: "C2_N1", log: "你深吸一口气，准备迎接更难的明天。" }],
-  },
-
-  C2_N1: {
-    id: "C2_N1",
-    chapter: "第二章 · 假婚避祸",
-    title: "铺中风波",
-    image: "assets/cg/C2_N1.png",
-    text:
-      "第二日，大伯一家上门，张口便要你交出铺面。\n\n他们目光落在后院，话里话外都在试探：那个男人是谁？\n\n你感到家产与名声都在被人掐住。",
-    choices: [
-      {
-        label: "强硬驱赶",
-        next: "C2_N2A",
-        effects: { stats: { reputation: +2, property: +1 } },
-        tags: ["名声+2", "家产压力+1"],
-        log: "你持刀镇住众人。你赢了气势，却也更树敌。",
-      },
-      {
-        label: "息事宁人",
-        next: "C2_N2B",
-        effects: { stats: { property: +2 } },
-        tags: ["家产压力+2"],
-        log: "你忍着火气，试图缓和。可有些人只会得寸进尺。",
-      },
-      {
-        label: "让谢征出面",
-        next: "C2_N2C",
-        effects: { stats: { affection: +10, suspicion: +1 } },
-        tags: ["好感+10", "怀疑+1"],
-        log: "谢征出面周旋，话锋冷静利落。你更怀疑他究竟是什么人。",
-      },
-    ],
-  },
-
-  C2_N2A: {
-    id: "C2_N2A",
-    chapter: "第二章 · 假婚避祸",
-    title: "强硬驱赶",
-    image: "assets/cg/C2_N2A.png",
-    text: "你把刀横在案上，语气不重，却足够硬。\n\n大伯脸色难看地退开，临走时丢下一句狠话。",
-    choices: [{ label: "继续经营", next: "C2_N3", log: "你强撑着把日子过下去。可麻烦不会自己消失。" }],
-  },
-
-  C2_N2B: {
-    id: "C2_N2B",
-    chapter: "第二章 · 假婚避祸",
-    title: "息事宁人",
-    image: "assets/cg/C2_N2B.png",
-    text: "你压住火气，赔了笑脸。\n\n他们暂时退了，却像在你门口插了根针：随时会扎回来。",
-    choices: [{ label: "继续经营", next: "C2_N3", log: "你把铺子收拾好，心里却更沉。" }],
-  },
-
-  C2_N2C: {
-    id: "C2_N2C",
-    chapter: "第二章 · 假婚避祸",
-    title: "谢征出面",
-    image: "assets/cg/C2_N2C.png",
-    text: "谢征语气平静，字字都像算过。\n\n他几句话就让对方进退两难。你看着他，忽然觉得陌生。",
-    choices: [{ label: "继续经营", next: "C2_N3", log: "你让风波暂缓，但也把谢征推到了更亮的地方。" }],
-  },
-
-  C2_N3: {
-    id: "C2_N3",
-    chapter: "第二章 · 假婚避祸",
-    title: "通缉画像",
-    image: "assets/cg/C2_N3.png",
-    text:
-      "城门口贴出新画像：眉眼模糊，却像极了谢征。\n\n继续同住，风险加剧。\n\n谢征却说：‘若要避祸，最稳的法子，是让所有人相信我们是夫妻。’",
-    choices: [
-      {
-        label: "提议送他离城",
-        next: "C2_N4A",
-        effects: { stats: { affection: -10, danger: +1 } },
-        tags: ["好感-10", "危险+1"],
-        log: "你提议送他离城。你想甩开麻烦，也怕自己越陷越深。",
-      },
-      {
-        label: "接受他提出的假婚方案",
-        next: "C2_N4B",
-        effects: { stats: { affection: +10 }, flags: { marriage: true } },
-        tags: ["好感+10", "婚约=true"],
-        log: "你接受假婚。你不知这算不算赌，但你已经没有太多路。",
-      },
-      {
-        label: "要求先说实话",
-        next: "C2_N4C",
-        effects: { stats: { suspicion: +2 } },
-        tags: ["怀疑+2"],
-        log: "你要求他坦白。合作之前，你至少要知道他在躲什么。",
-      },
-    ],
-  },
-
-  C2_N4A: {
-    id: "C2_N4A",
-    chapter: "第二章 · 假婚避祸",
-    title: "送他离城",
-    image: "assets/cg/C2_N4A.png",
-    text:
-      "谢征摇头：‘我伤未愈，城外更危险。’\n\n他看你的眼神有些淡，像是把某种期待收回去了。",
-    choices: [{ label: "重新考虑假婚", next: "C2_N5", log: "你意识到，拖延只会让事更糟。" }],
-  },
-
-  C2_N4B: {
-    id: "C2_N4B",
-    chapter: "第二章 · 假婚避祸",
-    title: "接受假婚",
-    image: "assets/cg/C2_N4B.png",
-    text:
-      "你们约定口径，拟好称谓。\n\n从今天起，对外你们是夫妻。\n对内——你也说不清算什么。",
-    choices: [{ label: "准备婚书", next: "C2_N5", log: "你开始准备婚书，心里却像压了块石头。" }],
-  },
-
-  C2_N4C: {
-    id: "C2_N4C",
-    chapter: "第二章 · 假婚避祸",
-    title: "要求坦白",
-    image: "assets/cg/C2_N4C.png",
-    text:
-      "谢征沉默很久，只说自己牵涉旧案。\n\n他不能说全，但承诺：不会让你白白受牵连。\n\n你听见这句承诺，反而更不安。",
-    choices: [
-      {
-        label: "接受假婚",
-        next: "C2_N5",
-        effects: { stats: { affection: +5 }, flags: { marriage: true } },
-        tags: ["好感+5", "婚约=true"],
-        log: "你接受假婚。你不知道这是不是信任，但你决定先活下去。",
-      },
-      {
-        label: "拒绝合作，但先把局面稳住",
-        next: "C2_N5",
-        effects: { stats: { affection: -5, suspicion: +2 } },
-        tags: ["好感-5", "怀疑+2"],
-        log: "你没答应他。可局面逼人，你只能先稳住外头。",
-      },
-    ],
-  },
-
-  C2_N5: {
-    id: "C2_N5",
-    chapter: "第二章 · 假婚避祸",
-    title: "成婚过场",
-    image: "assets/cg/C2_N5.png",
-    text:
-      "无论真心与否，你都得决定‘婚礼’的样子。\n\n它会影响外界的观感，也会影响你与谢征之间的距离。",
-    choices: [
-      {
-        label: "简办只求遮掩",
-        next: "C2_END",
-        log: "你选择简办。只求遮掩，不谈体面。",
-      },
-      {
-        label: "体面操办稳住族人（花费银钱）",
-        next: "C2_END",
-        effects: { stats: { money: -1, reputation: +1, rumor: -1 } },
-        tags: ["银钱-1", "名声+1", "流言-1"],
-        if: { stats: { money: { gte: 1 } } },
-        log: "你体面操办。银钱少了，风声也小了些。",
-      },
-      {
-        label: "拒绝婚礼只演戏",
-        next: "C2_END",
-        effects: { stats: { affection: -5, rumor: +1 } },
-        tags: ["好感-5", "流言+1"],
-        log: "你拒绝婚礼，只演给外人看。谢征的目光沉了沉。",
-      },
-    ],
-  },
-
-  C2_END: {
-    id: "C2_END",
-    chapter: "第二章 · 假婚避祸",
-    title: "章节结尾",
-    image: "assets/cg/C2_END.png",
-    text:
-      "假婚关系确立。\n\n谢征正式住入樊家后院。\n从此你们要共同对抗外界，也要共同面对彼此的秘密。",
-    choices: [{ label: "进入第三章", next: "C3_N1", log: "你掀开新的一页，纸上却已沾了旧案的灰。" }],
-  },
-
-  C3_N1: {
-    id: "C3_N1",
-    chapter: "第三章 · 残玉旧案",
-    title: "婚后清晨",
-    image: "assets/cg/C3_N1.png",
-    text:
-      "邻里议论纷纷，铺子生意也被流言影响。\n\n你明白：名声是刀，能护你，也能伤你。",
-    choices: [
-      {
-        label: "主动解释婚事",
-        next: "C3_N2A",
-        effects: { stats: { reputation: +1, suspicion: +1, rumor: -1 } },
-        tags: ["名声+1", "怀疑+1", "流言-1"],
-        log: "你主动解释婚事。流言稍缓，但你也暴露了婚事仓促。",
-      },
-      {
-        label: "埋头做生意",
-        next: "C3_N2B",
-        effects: { stats: { money: +1, rumor: +1 } },
-        tags: ["银钱+1", "流言+1"],
-        log: "你埋头做生意。短期有收益，流言却更发酵。",
-      },
-      {
-        label: "请谢征帮忙记账招呼",
-        next: "C3_N2C",
-        effects: { stats: { affection: +10, suspicion: +1, rumor: -1 } },
-        tags: ["好感+10", "怀疑+1", "流言-1"],
-        log: "谢征帮忙得体利落。你更怀疑他的来历，也更离不开他的手段。",
-      },
-    ],
-  },
-
-  C3_N2A: {
-    id: "C3_N2A",
-    chapter: "第三章 · 残玉旧案",
-    title: "主动解释",
-    image: "assets/cg/C3_N2A.png",
-    text: "你把话说清楚，脸上带笑，背后却发冷。\n\n有些人听进去了，有些人只想看你出丑。",
-    choices: [{ label: "前往集市", next: "C3_N3", log: "你决定去集市转转，打听些消息。" }],
-  },
-
-  C3_N2B: {
-    id: "C3_N2B",
-    chapter: "第三章 · 残玉旧案",
-    title: "埋头做生意",
-    image: "assets/cg/C3_N2B.png",
-    text: "你把刀磨得更亮，把账记得更细。\n\n可流言像灰，落在每个来客的眼里。",
-    choices: [{ label: "前往集市", next: "C3_N3", log: "你还是得出去一趟，看看风声从哪儿来。" }],
-  },
-
-  C3_N2C: {
-    id: "C3_N2C",
-    chapter: "第三章 · 残玉旧案",
-    title: "谢征帮忙",
-    image: "assets/cg/C3_N2C.png",
-    text: "谢征记账极快，招呼客人也极稳。\n\n这不像一个‘逃命之人’该有的从容。",
-    choices: [{ label: "前往集市", next: "C3_N3", log: "你带着疑问出门，想找个答案。" }],
-  },
-
-  C3_N3: {
-    id: "C3_N3",
-    chapter: "第三章 · 残玉旧案",
-    title: "当铺线索",
-    image: "assets/cg/C3_N3.png",
-    text: (state) => {
-      const have = !!state.flags?.have_jade;
-      return have
-        ? "当铺掌柜盯着你拿出的残玉，神色一变。\n\n‘这纹样……我见过。十余年前，一桩灭门旧案里，也有同样的玉。’\n\n他压低声音：‘你别再拿出来，拿出来就是招祸。’"
-        : "当铺掌柜提起一则传闻：十余年前曾有灭门旧案，牵连到一枚刻纹极深的玉。\n\n你听着，只觉得后颈发凉。\n\n若你手里真有那样的东西——你也许已经走进局里了。";
+    // ─────────────────────────────────────────
+    //  开始
+    // ─────────────────────────────────────────
+    start: {
+      id: "start",
+      chapter: "开始",
+      title: "《逐玉》· 视觉小说",
+      text:
+        "你将扮演樊长玉——一个守着猪肉铺过活的年轻女子。\n\n" +
+        "雪夜，一声闷响，一个濒死的男人，一枚握在他手里的碎玉。\n\n" +
+        "你本可以不管。\n\n" +
+        "你的每次选择都会改变关系、名声与危险，并影响故事走向。",
+      choices: [
+        { label: "开始故事", next: "C1_N1", setRole: "fan_changyu" },
+      ],
     },
-    choices: [
-      {
-        label: "继续追问旧案",
-        next: "C3_N4A",
-        effects: { stats: { danger: +1, suspicion: +1 } },
-        tags: ["危险+1", "怀疑+1"],
-        log: "你继续追问。越问越危险，但你停不下来。",
+
+    // ─────────────────────────────────────────
+    //  第一章 · 风雪夜救人
+    // ─────────────────────────────────────────
+    C1_N1: {
+      id: "C1_N1",
+      chapter: "第一章 · 风雪夜救人",
+      title: "后院异响",
+      image: "assets/cg/C1_N1.png",
+      text:
+        "大雪封街，收摊比平日早了半个时辰。\n\n" +
+        "你正要合上后门，忽听院外一声闷响——不像猫，像是有人从高处跌落，重重砸在了雪地上。\n\n" +
+        "这条巷子背光，向来不太平。\n\n" +
+        "你握着门闩，站了片刻。",
+      choices: [
+        {
+          label: "提灯去看",
+          next: "C1_N2",
+          log: "你提灯走向后院。你告诉自己只是去看看，看完就回来。",
+        },
+        {
+          label: "先把门闩好，再去看",
+          next: "C1_N2",
+          effects: { stats: { suspicion: +2 } },
+          tags: ["谨慎+2"],
+          log: "你先扣牢门闩，再提灯去看。谨慎不是怯懦，是活得久的方法。",
+        },
+      ],
+    },
+
+    C1_N2: {
+      id: "C1_N2",
+      chapter: "第一章 · 风雪夜救人",
+      title: "雪地伤者",
+      image: "assets/cg/C1_N2.png",
+      text:
+        "雪地里躺着一名男子。\n\n" +
+        "血迹已被风雪糊成暗色，从胸口漫延至腰侧。他右手死死攥着一枚碎裂的玉佩，指节冻得发白，像是死了也不肯松。\n\n" +
+        "你蹲下去，把灯凑近他的脸——\n\n" +
+        "五官极深，眉骨有一道旧伤，即便昏迷，表情也像压着什么事，不肯放松。\n\n" +
+        "他还有呼吸。\n\n" +
+        "你若救他，便是把麻烦背进屋。若不救，今夜也许能睡得安稳。",
+      choices: [
+        {
+          label: "把人背进屋",
+          next: "C1_N3A",
+          log: "你顾不上多想，把人架起来往屋里拖。你只知道不能让人死在你院子里。",
+        },
+        {
+          label: "先搬去柴房，观察再说",
+          next: "C1_N3B",
+          log: "你把人拖进柴房，先藏好。你不是不救，只是要先看清楚他是什么人。",
+        },
+        {
+          label: "搜身，先弄清他是谁",
+          next: "C1_N3C",
+          log: "你翻了翻他身上，想知道自己要救的是个什么人。",
+        },
+      ],
+    },
+
+    C1_N3A: {
+      id: "C1_N3A",
+      chapter: "第一章 · 风雪夜救人",
+      title: "连夜施救",
+      image: "assets/cg/C1_N3A.png",
+      text:
+        "你把人背进内屋，火盆旁的热气让他身子微微抖了一下。\n\n" +
+        "止血、清洗、包扎——你手法比你自己想的要熟练，没有慌乱。\n\n" +
+        "他的伤在胸口，刀刺的，很深，冲着要害去的。下手那人想要他的命，不是劫财。\n\n" +
+        "他偏偏没死。\n\n" +
+        "你盯着他的脸，看了很久，手上还在上药。",
+      choices: [
+        {
+          label: "低声问他姓名",
+          next: "C1_FEVER",
+          effects: { stats: { affection: +15, reputation: +1 } },
+          tags: ["好感+15", "名声+1"],
+          log: "你轻声问了他叫什么。他没有回答，但你看见他的眼皮动了一下。",
+        },
+        {
+          label: "什么也不问，先救人",
+          next: "C1_FEVER",
+          effects: { stats: { affection: +10, reputation: +1 } },
+          tags: ["好感+10", "名声+1"],
+          log: "你没有追问。活下去比什么都要紧，至少今晚如此。",
+        },
+      ],
+    },
+
+    C1_FEVER: {
+      id: "C1_FEVER",
+      chapter: "第一章 · 风雪夜救人",
+      title: "深夜发热",
+      image: "assets/cg/C1_FEVER.png",
+      text:
+        "半夜，他烧起来了。\n\n" +
+        "你用帕子替他敷额，灯火昏黄，他的眉头始终紧皱，像在梦里也未曾放松过。\n\n" +
+        "迷迷糊糊中，他抓住了你的手腕。\n\n" +
+        "他的手烫，但握力出奇地稳，不像个快死的人。\n\n" +
+        "他低哑地念了一个名字——不是你的名字。是个男人的名字，念得很轻，带着某种说不清楚的恨意，又有点像是思念。\n\n" +
+        "你僵在原地，不知那是仇人还是旧人，也不知自己该不该问。",
+      choices: [
+        {
+          label: "守在他身边，一夜没走",
+          next: "C1_N4",
+          effects: { stats: { affection: +20 } },
+          tags: ["好感+20"],
+          log: "你守到天亮。热退了，他的手还搭在你的手腕上，像忘了放开。你看着他睡着的脸，忽然觉得这人和你之间有了某种说不清楚的牵绊。",
+        },
+        {
+          label: "换过药，轻手退开",
+          next: "C1_N4",
+          effects: { stats: { affection: +8 } },
+          tags: ["好感+8"],
+          log: "你把他的手指一根一根拨开，起身离开。你不想靠太近——你知道一旦太近，就很难再退。",
+        },
+        {
+          label: "低声问：那个名字，是谁",
+          next: "C1_N4",
+          effects: { stats: { affection: +5, suspicion: +3 } },
+          tags: ["好感+5", "怀疑+3"],
+          log: "他没有回答。那个名字悬在昏暗里，像一根刺，扎在你心上，不深，但不好拔。",
+        },
+      ],
+    },
+
+    C1_N3B: {
+      id: "C1_N3B",
+      chapter: "第一章 · 风雪夜救人",
+      title: "柴房观察",
+      image: "assets/cg/C1_N3B.png",
+      text:
+        "柴房里潮冷，草垛带着霉味，门缝里漏着风。\n\n" +
+        "他被你拖进来时闷哼了一声，像是痛醒，又很快沉回去。\n\n" +
+        "你站在门口，灯一举——他的脸在光里，眉骨有旧伤，衣料不像寻常人的粗布，眼尾角度生来带着三分冷意。\n\n" +
+        "你不知道他是什么人。但你知道让他就这么死在柴房里，你心里过不去。",
+      choices: [
+        {
+          label: "深夜送药过来",
+          next: "C1_N4",
+          effects: { stats: { affection: +5, suspicion: +1 } },
+          tags: ["好感+5", "谨慎+1"],
+          log: "你还是送了药。你不敢太靠近，但也不想他死在你家柴房。",
+        },
+        {
+          label: "等天亮再看",
+          next: "C1_N4",
+          effects: { stats: { affection: -5, danger: +2 } },
+          tags: ["好感-5", "危险+2"],
+          log: "你决定等天亮。可你一夜没怎么睡，隔一会儿就要去扒门缝看他是否还有动静。",
+        },
+      ],
+    },
+
+    C1_N3C: {
+      id: "C1_N3C",
+      chapter: "第一章 · 风雪夜救人",
+      title: "搜身确认",
+      image: "assets/cg/C1_N3C.png",
+      text:
+        "你翻了他的衣衫。\n\n" +
+        "腰间有一枚残玉，纹样精细，刻工深峻，绝不是寻常人家的东西。\n\n" +
+        "衣襟内侧藏着半页被撕碎的纸，上面只剩几行墨迹，字迹工整，像是从一份名册上撕下来的。\n\n" +
+        "你盯着那几行字，后颈发凉。\n\n" +
+        "这人身上带着麻烦，而且不是小麻烦。",
+      choices: [
+        {
+          label: "把残玉放回他手边",
+          next: "C1_N4",
+          effects: { stats: { affection: +5 }, flags: { have_jade: false } },
+          tags: ["好感+5"],
+          log: "你把残玉放回他掌心。你想保持距离，也想保住自己的良心。",
+        },
+        {
+          label: "先藏起残玉",
+          next: "C1_N4",
+          effects: { stats: { suspicion: +3 }, flags: { have_jade: true } },
+          tags: ["怀疑+3", "持有残玉"],
+          log: "你把残玉藏进腰带里。你不知道它值不值命，但至少值一个答案。",
+        },
+      ],
+    },
+
+    C1_N4: {
+      id: "C1_N4",
+      chapter: "第一章 · 风雪夜救人",
+      title: "苏醒试探",
+      image: "assets/cg/C1_N4.png",
+      text:
+        "天光透进来时，他醒了。\n\n" +
+        "第一件事是扫视屋内，目光快而准，像在确认逃路。落在你身上的时候停了一秒——不是感激，是评估。\n\n" +
+        "他开口，声音沙哑：'我遭人追杀。别的，暂时不方便说。'\n\n" +
+        "你听得出他在试探你的底线：他给你最少的信息，看你会怎么反应。\n\n" +
+        "你也在打量他。",
+      choices: [
+        {
+          label: "点头，暂时相信他",
+          next: "C1_N5",
+          effects: { stats: { affection: +8 } },
+          tags: ["好感+8"],
+          log: "你没有追问。你告诉他先养伤，别的以后再说。他盯了你很久，最后移开了视线。",
+        },
+        {
+          label: "追问：追杀你的是什么人",
+          next: "C1_N5",
+          effects: { stats: { suspicion: +2 } },
+          tags: ["怀疑+2"],
+          log: "你直接问。他沉默了一会儿，说：'知道得越少，你越安全。'你说：'可我已经知道了你躺在我床上这件事。'",
+        },
+        {
+          label: "警告他：天亮必须离开",
+          next: "C1_N5",
+          effects: { stats: { affection: -5, danger: -1 } },
+          tags: ["好感-5", "危险-1"],
+          log: "你警告他天亮就走。他沉默片刻，眼神有什么东西收回去了，说：'好。'",
+        },
+      ],
+    },
+
+    C1_N5: {
+      id: "C1_N5",
+      chapter: "第一章 · 风雪夜救人",
+      title: "官差巡街",
+      image: "assets/cg/C1_N5.png",
+      text:
+        "外头忽然传来脚步与喝问声，火把的光从窗缝里透进来。\n\n" +
+        "『搜！通缉要犯，近日必藏于城中——挨家挨户，不得遗漏！』\n\n" +
+        "你心口一紧。\n\n" +
+        "你看向床上那人——他已经坐起来了，眼神沉静，不慌，仿佛早就料到会有这一刻。\n\n" +
+        "他轻声说：'你决定。'",
+      choices: [
+        {
+          label: "把他藏进地窖",
+          next: "C1_END",
+          effects: { stats: { danger: -2, affection: +5 } },
+          tags: ["危险-2", "好感+5"],
+          log: "你把他藏进地窖，盖好入口。官差进来，你端着热水，脸上没有一点慌色。他们走了。你打开地窖，他抬头看你，什么也没说，但那一眼不一样了。",
+        },
+        {
+          label: "编称是远房表兄探亲",
+          next: "C1_END",
+          effects: { stats: { reputation: +2, danger: +1, affection: +8 } },
+          tags: ["名声+2", "危险+1", "好感+8"],
+          log: "你开门，扶他靠在门边，笑着解释表兄远道来访、旧伤复发。官差打量他一眼，走了。话说出口那一刻，你知道自己已经站边了。",
+        },
+        {
+          label: "让他自己应对，你去开门",
+          next: "C1_END",
+          effects: { stats: { affection: -12, danger: +3 } },
+          tags: ["好感-12", "危险+3"],
+          log: "你去开门应付官差，他自己摸黑躲到柜后。官差走后，你们对视，他的眼神淡了。你不知道那淡里面是不是有一点失望。",
+        },
+      ],
+    },
+
+    C1_END: {
+      id: "C1_END",
+      chapter: "第一章 · 风雪夜救人",
+      title: "第一章终",
+      image: "assets/cg/C1_END.png",
+      text:
+        "巡街声渐远，雪却下得更紧。\n\n" +
+        "谢征——他终于告诉了你这个名字——暂时留在铺子后院。\n\n" +
+        "你坐在灶边，听着外头风声，想着今晚发生的这一切。\n\n" +
+        "你告诉自己，等他伤好了，这件事就结束了。\n\n" +
+        "你自己都不太信这句话。",
+      choices: [
+        { label: "进入第二章", next: "C2_N1", log: "你深吸一口气，准备迎接更难的明天。" },
+      ],
+    },
+
+    // ─────────────────────────────────────────
+    //  第二章 · 假婚避祸
+    // ─────────────────────────────────────────
+    C2_N1: {
+      id: "C2_N1",
+      chapter: "第二章 · 假婚避祸",
+      title: "大伯上门",
+      image: "assets/cg/C2_N1.png",
+      text:
+        "第二日一早，大伯一家登门。\n\n" +
+        "张口就是铺面的事，话里话外都在试探后院那个陌生男人是谁。\n\n" +
+        "大伯的眼神在你身上、在后院门上来回扫，像一把算盘打着利害关系。\n\n" +
+        "谢征在后院，隔着一道门，你感觉他在听。",
+      choices: [
+        {
+          label: "把刀搭在案上，强硬驱赶",
+          next: "C2_N2A",
+          effects: { stats: { reputation: +3, property: +2 } },
+          tags: ["名声+3", "家产压力+2"],
+          log: "你持刀镇住众人。你赢了气势，也树了更深的敌意。",
+        },
+        {
+          label: "好声好气，先把人打发走",
+          next: "C2_N2B",
+          effects: { stats: { property: +1, rumor: +1 } },
+          tags: ["家产压力+1", "流言+1"],
+          log: "你压住火气，赔了笑脸。他们暂时退了，却像在你门口插了根刺。",
+        },
+        {
+          label: "请谢征出来周旋",
+          next: "C2_N2C",
+          effects: { stats: { affection: +10, suspicion: +2 } },
+          tags: ["好感+10", "怀疑+2"],
+          log: "谢征出面，话锋冷静利落。你更怀疑他究竟是什么人。",
+        },
+      ],
+    },
+
+    C2_N2A: {
+      id: "C2_N2A",
+      chapter: "第二章 · 假婚避祸",
+      title: "强硬驱赶",
+      image: "assets/cg/C2_N2A.png",
+      text:
+        "你把刀横在案上，语气不重，却足够硬。\n\n" +
+        "大伯脸色难看地退开，临走时丢了一句狠话：『你一个女人家，迟早守不住这铺子。』\n\n" +
+        "空气沉了一下。\n\n" +
+        "谢征站在内室门口，把这一幕看进眼里，没有说话。\n\n" +
+        "你不需要他说话。可不知为何，你还是往那个方向看了一眼。",
+      choices: [
+        {
+          label: "不在意，重新开铺",
+          next: "C2_N3",
+          log: "你把刀收好，继续做生意。强撑着把日子过下去，也是一种本事。",
+        },
+        {
+          label: "转身，与谢征对视一眼",
+          next: "C2_N3",
+          effects: { stats: { affection: +5 } },
+          tags: ["好感+5"],
+          log: "他与你对视，轻轻点了一下头。那一个动作，比什么话都稳。",
+        },
+      ],
+    },
+
+    C2_N2B: {
+      id: "C2_N2B",
+      chapter: "第二章 · 假婚避祸",
+      title: "息事宁人",
+      image: "assets/cg/C2_N2B.png",
+      text:
+        "你压住火气，赔了笑脸。\n\n" +
+        "他们暂时退了，却像在门口插了根针，随时会扎回来。\n\n" +
+        "你回到灶间，手抖得厉害，不知是气的还是怕的。\n\n" +
+        "门被人从外头轻轻推开——是谢征，端着一碗热水，没问原因，直接放到你手边。",
+      choices: [
+        {
+          label: "接过热水，一个人平复",
+          next: "C2_N3",
+          log: "你喝完，把碗放回去，没有说话。有些情绪，只能自己消化。",
+        },
+        {
+          label: "抬头问他：你是不是听到了",
+          next: "C2_N3",
+          effects: { stats: { affection: +8 } },
+          tags: ["好感+8"],
+          log: "他说：『听到了。』停顿了一下，又说：『你撑得很好。』你没想到他会这样说，一时没话接。",
+        },
+      ],
+    },
+
+    C2_N2C: {
+      id: "C2_N2C",
+      chapter: "第二章 · 假婚避祸",
+      title: "谢征出面",
+      image: "assets/cg/C2_N2C.png",
+      text:
+        "谢征出来，语气平静，字字都像算过。\n\n" +
+        "他几句话就把大伯逼进退两难的处境，临走时那张老脸僵在那儿，像被人按住了喉咙。\n\n" +
+        "你站在一旁，忽然觉得这人陌生。\n\n" +
+        "能把人逼成这样，他自己一定也被人逼过，而且不止一次。",
+      choices: [
+        {
+          label: "事后问他：这种话哪儿学的",
+          next: "C2_N3",
+          effects: { stats: { suspicion: +3 } },
+          tags: ["怀疑+3"],
+          log: "他只说：『见过世面。』你不信，但也没追问下去。",
+        },
+        {
+          label: "什么也不问，只说了声谢",
+          next: "C2_N3",
+          effects: { stats: { affection: +8 } },
+          tags: ["好感+8"],
+          log: "他愣了一下，似乎没想到你会道谢。过了会儿，他说：『不必谢。』但语气比平时软了一分。",
+        },
+      ],
+    },
+
+    C2_N3: {
+      id: "C2_N3",
+      chapter: "第二章 · 假婚避祸",
+      title: "通缉画像",
+      image: "assets/cg/C2_N3.png",
+      text:
+        "城门口贴出了新的通缉画像。\n\n" +
+        "眉眼模糊，却和谢征有七分相似。\n\n" +
+        "你把那张纸带回来，放在桌上。谢征盯着它看了很久，说：\n\n" +
+        "『若要避祸，最稳的法子，是让所有人都相信——我们是夫妻。』\n\n" +
+        "屋里一时无声。",
+      choices: [
+        {
+          label: "提议趁夜送他出城",
+          next: "C2_N4A",
+          effects: { stats: { affection: -10, danger: +2 } },
+          tags: ["好感-10", "危险+2"],
+          log: "你提议送他走。你想甩开麻烦，也怕自己越陷越深。",
+        },
+        {
+          label: "同意假婚方案",
+          next: "C2_N4B",
+          effects: { stats: { affection: +10 }, flags: { marriage: true } },
+          tags: ["好感+10", "婚约=true"],
+          log: "你接受了他的提议。你不知这算不算赌，但已经没有太多路可走。",
+        },
+        {
+          label: "要求他先把实情交代清楚",
+          next: "C2_N4C",
+          effects: { stats: { suspicion: +2 } },
+          tags: ["怀疑+2"],
+          log: "你要求他坦白。合作之前，你至少要知道他在躲什么。",
+        },
+      ],
+    },
+
+    C2_N4A: {
+      id: "C2_N4A",
+      chapter: "第二章 · 假婚避祸",
+      title: "无法出城",
+      image: "assets/cg/C2_N4A.png",
+      text:
+        "谢征摇了摇头：『伤还没好。城外的人比城里更多，我出城就是送死。』\n\n" +
+        "他顿了顿，目光落在那张通缉画像上，又移回你脸上：\n\n" +
+        "『我知道你在想什么。你想把这个麻烦推出去。』\n\n" +
+        "他说得平静，没有指责，却让你一时答不上话。\n\n" +
+        "『但现在唯一的办法，是让人觉得我不是那个被通缉的人。』",
+      choices: [
+        {
+          label: "重新考虑假婚方案",
+          next: "C2_N4B",
+          effects: { stats: { flags: { marriage: true } } },
+          log: "你看着那张画像，认了。拖延只会让局面更被动。",
+        },
+        {
+          label: "问他：除了假婚，就没有别的办法了吗",
+          next: "C2_N5",
+          effects: { stats: { affection: -3 } },
+          tags: ["好感-3"],
+          log: "他看了你很久，说：『有，但风险更大，而且要赌你愿不愿意。』",
+        },
+      ],
+    },
+
+    C2_N4B: {
+      id: "C2_N4B",
+      chapter: "第二章 · 假婚避祸",
+      title: "答应假婚",
+      image: "assets/cg/C2_N4B.png",
+      text:
+        "你答应了。\n\n" +
+        "话音刚落，屋子里安静了一瞬，像什么东西悄悄改变了形状。\n\n" +
+        "谢征看了你很久，说：『你不后悔？』\n\n" +
+        "你反问他：『你先把规矩说清楚，我就不后悔。』\n\n" +
+        "他点头，坐正了身子——",
+      choices: [
+        {
+          label: "听他说规矩",
+          next: "C2_RULES",
+          log: "你准备好了。",
+        },
+      ],
+    },
+
+    C2_RULES: {
+      id: "C2_RULES",
+      chapter: "第二章 · 假婚避祸",
+      title: "约法三章",
+      image: "assets/cg/C2_RULES.png",
+      text:
+        "谢征说：\n\n" +
+        "『你的铺子，我不插手；我的事，你不追问；对外，我们是夫妻，回到屋里，各守各的。』\n\n" +
+        "他顿了顿，又补了一句，语气比前面的话都要轻：\n\n" +
+        "『我不会让你白白受牵连。』\n\n" +
+        "烛火在他脸上摇了一下，你分不清他说的是承诺还是交易。\n\n" +
+        "但你注意到他说这句话时，眼神没有移开。\n\n" +
+        "你要怎么回应？",
+      choices: [
+        {
+          label: "点头，照单全收",
+          next: "C2_N5",
+          log: "你点头。规矩清楚，反而让你好受一些。",
+        },
+        {
+          label: "再加一条：不许对我撒谎",
+          next: "C2_N5",
+          effects: { stats: { affection: +10, suspicion: -2 } },
+          tags: ["好感+10", "怀疑-2"],
+          log: "谢征停了一下，看了你很久，然后点头。『好。』他说得很轻，却比前面的话都更像真的。",
+        },
+        {
+          label: "反问他：万一你先食言呢",
+          next: "C2_N5",
+          effects: { stats: { affection: +6, suspicion: +1 } },
+          tags: ["好感+6", "怀疑+1"],
+          log: "他没有立刻回答，只是盯着你看。你也不移开眼。最后他说：『那就由你来追究。』你不知道这算不算一句承诺。",
+        },
+      ],
+    },
+
+    C2_N4C: {
+      id: "C2_N4C",
+      chapter: "第二章 · 假婚避祸",
+      title: "要求坦白",
+      image: "assets/cg/C2_N4C.png",
+      text:
+        "谢征沉默了很久。\n\n" +
+        "最终他只说：『我牵涉一桩旧案。案子没结，有人不想让我活着见到结案那天。』\n\n" +
+        "他抬头看你：『就这些。不是不信你，是知道得越少，你越安全。』\n\n" +
+        "你听见这句话，反而更不安——因为他说得像是在保护你。",
+      choices: [
+        {
+          label: "接受假婚",
+          next: "C2_RULES",
+          effects: { stats: { affection: +8 }, flags: { marriage: true } },
+          tags: ["好感+8", "婚约=true"],
+          log: "你接受了。你不知道这是不是信任，但你决定先活过今天。",
+        },
+        {
+          label: "先不表态，但同意暂时配合",
+          next: "C2_N5",
+          effects: { stats: { affection: -3, suspicion: +2 } },
+          tags: ["好感-3", "怀疑+2"],
+          log: "你没有答应假婚，只说先配合度过眼前这一关。他看了你一眼，没有多说。",
+        },
+      ],
+    },
+
+    C2_N5: {
+      id: "C2_N5",
+      chapter: "第二章 · 假婚避祸",
+      title: "婚礼形式",
+      image: "assets/cg/C2_N5.png",
+      text:
+        "不管真心与否，婚礼的样子还是要定下来。\n\n" +
+        "邻里会看，族人会议论，大伯家会盯着每一个细节找漏洞。\n\n" +
+        "谢征把这件事交给你决定，只说：『你比我更清楚这里的人。』\n\n" +
+        "你看了他一眼，不知道这算不算是信任。",
+      choices: [
+        {
+          label: "简办，只求遮掩",
+          next: "C2_END",
+          log: "你选择简办。不谈体面，只求把局面糊过去。",
+        },
+        {
+          label: "体面操办，稳住族人（花费银钱）",
+          next: "C2_END",
+          effects: { stats: { money: -1, reputation: +2, rumor: -2 } },
+          tags: ["银钱-1", "名声+2", "流言-2"],
+          if: { stats: { money: { gte: 1 } } },
+          log: "你体面操办。银钱少了，外头风声小了些，你心里却更沉。",
+        },
+        {
+          label: "拒绝办婚礼，只做表面文章",
+          next: "C2_END",
+          effects: { stats: { affection: -6, rumor: +2 } },
+          tags: ["好感-6", "流言+2"],
+          log: "你拒绝操办任何仪式。谢征没说什么，只是目光沉了一下，像把什么收回去了。",
+        },
+      ],
+    },
+
+    C2_END: {
+      id: "C2_END",
+      chapter: "第二章 · 假婚避祸",
+      title: "第二章终",
+      image: "assets/cg/C2_END.png",
+      text:
+        "假婚关系确立。\n\n" +
+        "谢征正式住进樊家后院，名义上是你的丈夫。\n\n" +
+        "第一个晚上，你们各睡各的房间，中间隔着一道门。\n\n" +
+        "你听见他那边没有任何动静，不知道他是醒着还是睡着。\n\n" +
+        "你也没有睡着。\n\n" +
+        "从今天起，你们要共同面对外面的人，也要共同面对彼此的秘密。",
+      choices: [
+        { label: "进入第三章", next: "C3_N1", log: "你掀开新的一页，纸上却已沾了旧案的灰。" },
+      ],
+    },
+
+    // ─────────────────────────────────────────
+    //  第三章 · 残玉旧案
+    // ─────────────────────────────────────────
+    C3_N1: {
+      id: "C3_N1",
+      chapter: "第三章 · 残玉旧案",
+      title: "婚后清晨",
+      image: "assets/cg/C3_N1.png",
+      text:
+        "第二日清晨，你醒得很早。\n\n" +
+        "灶间已经有了热茶——谢征不知什么时候起来的，茶正好是你惯喝的温度。\n\n" +
+        "你端着茶杯站了一会儿，说不清心里是什么感受。\n\n" +
+        "铺子开门后，邻里议论纷纷，流言像蚊虫一样在耳边飞。\n\n" +
+        "名声是刀，能护你，也能伤你。今天你要怎么应对？",
+      choices: [
+        {
+          label: "主动向街坊解释婚事",
+          next: "C3_N2A",
+          effects: { stats: { reputation: +2, rumor: -2 } },
+          tags: ["名声+2", "流言-2"],
+          log: "你主动解释，脸上带笑，背后发冷。流言稍缓，但你也暴露了婚事仓促。",
+        },
+        {
+          label: "闷头做生意，不理流言",
+          next: "C3_N2B",
+          effects: { stats: { money: +1, rumor: +2 } },
+          tags: ["银钱+1", "流言+2"],
+          log: "你不理流言，只顾做生意。短期有收益，流言却越发酵越厉害。",
+        },
+        {
+          label: "请谢征一起出来帮衬门面",
+          next: "C3_N2C",
+          effects: { stats: { affection: +10, rumor: -2, suspicion: +1 } },
+          tags: ["好感+10", "流言-2", "怀疑+1"],
+          log: "谢征帮忙得体利落。你更怀疑他的来历，也更发现自己离不开他的手段。",
+        },
+      ],
+    },
+
+    C3_N2A: {
+      id: "C3_N2A",
+      chapter: "第三章 · 残玉旧案",
+      title: "解释婚事",
+      image: "assets/cg/C3_N2A.png",
+      text:
+        "你把话说清楚，脸上带笑，背后却发冷。\n\n" +
+        "有些人听进去了，有些人只想看你出丑。\n\n" +
+        "回铺子的路上，谢征走在你身侧半步，不远不近，像是不经意，又像是在守着什么地方。\n\n" +
+        "他没有插话，没有帮腔——但他在。",
+      choices: [
+        {
+          label: "装作没注意他",
+          next: "C3_N3",
+          log: "你没有搭理他。你怕一开口，就落进他那个不知深浅的局里。",
+        },
+        {
+          label: "低声说：谢谢你今天没插嘴",
+          next: "C3_N3",
+          effects: { stats: { affection: +6 } },
+          tags: ["好感+6"],
+          log: "他愣了一下，然后说：『你比你看起来能撑。』你不知道该不该当成夸奖，但你心里有什么东西松了一点。",
+        },
+      ],
+    },
+
+    C3_N2B: {
+      id: "C3_N2B",
+      chapter: "第三章 · 残玉旧案",
+      title: "闷头做生意",
+      image: "assets/cg/C3_N2B.png",
+      text:
+        "你把刀磨得更亮，把账记得更细，不理任何人。\n\n" +
+        "可流言像灰，落在每个来客的眼里。\n\n" +
+        "午间收摊，谢征把你落下的钱袋捡起来，放到你手边，一句多余的话都没说。\n\n" +
+        "你看了他一眼，不知道他是什么时候注意到的。",
+      choices: [
+        {
+          label: "接过，不说话",
+          next: "C3_N3",
+          log: "你们之间的相处越来越像两个共同撑着一件事的人。这让你有点不安。",
+        },
+        {
+          label: "问他：你有没有想出去的时候",
+          next: "C3_N3",
+          effects: { stats: { affection: +8, suspicion: +1 } },
+          tags: ["好感+8", "怀疑+1"],
+          log: "他想了很久，说：『有。』就这一个字，没有下文。你没再问，他也没有再说。",
+        },
+      ],
+    },
+
+    C3_N2C: {
+      id: "C3_N2C",
+      chapter: "第三章 · 残玉旧案",
+      title: "谢征帮铺",
+      image: "assets/cg/C3_N2C.png",
+      text:
+        "谢征记账极快，招呼客人也极稳，价格心算毫无错漏。\n\n" +
+        "这不像一个逃命之人该有的从容。\n\n" +
+        "你盯着他写账的手：指节修长，落笔很轻，却像是在哪儿受过训练——不是商贾，也不像寻常读书人。\n\n" +
+        "你越看越觉得他哪儿不对，又说不出哪儿不对。",
+      choices: [
+        {
+          label: "把疑惑压下去，先出去打听消息",
+          next: "C3_N3",
+          log: "你带着疑问出门，想找个答案。有些事，得去外头才能查清。",
+        },
+        {
+          label: "直接问他：你以前是做什么的",
+          next: "C3_N3",
+          effects: { stats: { suspicion: +3 } },
+          tags: ["怀疑+3"],
+          log: "他停笔，看了你一眼，说：『账房。』你明显感到他在说谎，但他的脸上没有任何破绽。",
+        },
+      ],
+    },
+
+    C3_N3: {
+      id: "C3_N3",
+      chapter: "第三章 · 残玉旧案",
+      title: "当铺线索",
+      image: "assets/cg/C3_N3.png",
+      text: (state) => {
+        const have = !!state.flags?.have_jade;
+        return have
+          ? "当铺掌柜盯着你拿出的残玉，神色一变。\n\n" +
+            "『这纹样……我见过。十余年前，宛州城里出过一桩灭门旧案，苦主手里就有同样纹样的玉。』\n\n" +
+            "他压低声音，把玉推回你手边：『你把它藏好，别再拿出来。拿出来就是招祸。』\n\n" +
+            "你把玉握进掌心，心跳漏了半拍。"
+          : "当铺掌柜提起一则传闻：十余年前宛州曾有一桩灭门旧案，牵涉一枚有特殊刻纹的玉佩，案子至今未结。\n\n" +
+            "你听着，只觉得后颈发凉。\n\n" +
+            "谢征那枚碎玉的纹样，你见过——若那就是案子里的东西，你也许早就走进局里了。";
       },
-      {
-        label: "先回去与谢征商量",
-        next: "C3_N4B",
-        effects: { stats: { affection: +5 } },
-        tags: ["好感+5"],
-        log: "你决定先回去商量。你不想再一个人扛着这份不安。",
-      },
-      {
-        label: "隐瞒线索自行调查",
-        next: "C3_N4C",
-        effects: { stats: { affection: -10, suspicion: +2 } },
-        tags: ["好感-10", "怀疑+2"],
-        log: "你选择隐瞒。你不完全信他，也不愿把命押在他身上。",
-      },
-    ],
-  },
+      choices: [
+        {
+          label: "继续追问旧案详情",
+          next: "C3_N4A",
+          effects: { stats: { danger: +2, suspicion: +1 } },
+          tags: ["危险+2", "怀疑+1"],
+          log: "你继续追问。越问越危险，但你停不下来。",
+        },
+        {
+          label: "先回去告诉谢征",
+          next: "C3_N4B",
+          effects: { stats: { affection: +5 } },
+          tags: ["好感+5"],
+          log: "你决定先回去。你不想再一个人扛着这份不安，也想看看他会怎么说。",
+        },
+        {
+          label: "独吞线索，自己先查",
+          next: "C3_N4C",
+          effects: { stats: { affection: -8, suspicion: +3 } },
+          tags: ["好感-8", "怀疑+3"],
+          log: "你选择隐瞒谢征。你不完全信他，也不愿把命押在他身上。",
+        },
+      ],
+    },
 
-  C3_N4A: {
-    id: "C3_N4A",
-    chapter: "第三章 · 残玉旧案",
-    title: "追问旧案",
-    image: "assets/cg/C3_N4A.png",
-    text:
-      "你得知旧案幸存者可能藏身宛州。\n\n线索像火星，落在干草上。\n你知道从这一刻起，追查会变成追命。",
-    choices: [{ label: "夜探旧宅", next: "C3_N5", log: "你决定夜探旧宅，去找更硬的证据。" }],
-  },
+    C3_N4A: {
+      id: "C3_N4A",
+      chapter: "第三章 · 残玉旧案",
+      title: "追问旧案",
+      image: "assets/cg/C3_N4A.png",
+      text:
+        "你从掌柜口中拼出一个轮廓：\n\n" +
+        "十余年前，宛州城郊一户人家被灭门，案子被压下去了，官府结案说是劫财，但从来没有人信。\n\n" +
+        "据说案子里有一个孩子逃出去了，活到了现在。\n\n" +
+        "线索像火星，落在干草上。\n\n" +
+        "你走出当铺，风吹过来，后背发冷。",
+      choices: [
+        {
+          label: "回去把线索告诉谢征",
+          next: "C3_N5",
+          effects: { stats: { affection: +8 } },
+          tags: ["好感+8"],
+          log: "你决定告诉他。如果他就是那个孩子，他有权知道。",
+        },
+        {
+          label: "自己先去旧宅探一探",
+          next: "C3_N5",
+          effects: { stats: { danger: +2 } },
+          tags: ["危险+2"],
+          log: "你没有回去，直接往旧宅方向走。你想先看清楚再说。",
+        },
+      ],
+    },
 
-  C3_N4B: {
-    id: "C3_N4B",
-    chapter: "第三章 · 残玉旧案",
-    title: "与谢征商量",
-    image: "assets/cg/C3_N4B.png",
-    text:
-      "谢征听完，神色罕见动摇。\n\n他没有否认，只说：‘此案与我过去有关。’\n\n你第一次意识到：你们可能不得不并肩。",
-    choices: [{ label: "夜探旧宅", next: "C3_N5", log: "你决定和他一起准备，夜里去旧宅一探。" }],
-  },
+    C3_N4B: {
+      id: "C3_N4B",
+      chapter: "第三章 · 残玉旧案",
+      title: "告知谢征",
+      image: "assets/cg/C3_N4B.png",
+      text:
+        "谢征听完，沉默了很久。\n\n" +
+        "你第一次见他这副样子——不是那种算计时的沉默，是真的被什么东西压住了。\n\n" +
+        "他最终说：『这案子与我过去有关。十余年前，我失去了至亲。那枚玉，是他们留下的东西。』\n\n" +
+        "这是他第一次，在你面前说了一句真话。\n\n" +
+        "你没有追问更多。你知道这句话说出口有多重，也知道他大概不习惯被人接住。",
+      choices: [
+        {
+          label: "伸手，轻轻放在他肩上",
+          next: "C3_N5",
+          effects: { stats: { affection: +15 } },
+          tags: ["好感+15"],
+          log: "他的肩膀先绷了一下，然后慢慢松开。他没有说话，但也没有躲开。你们就这么沉默着，一会儿之后，他说：『一起去。』",
+        },
+        {
+          label: "沉默，点头，示意同行",
+          next: "C3_N5",
+          effects: { stats: { affection: +8 } },
+          tags: ["好感+8"],
+          log: "你们没有再多说。夜里，有些话是多余的。你们各自准备，默契地不再提那十余年。",
+        },
+      ],
+    },
 
-  C3_N4C: {
-    id: "C3_N4C",
-    chapter: "第三章 · 残玉旧案",
-    title: "自行调查",
-    image: "assets/cg/C3_N4C.png",
-    text:
-      "你决定不完全相信谢征。\n\n你独自摸查旧宅，心里盘算每条退路。\n\n可你也知道：独行更轻快，也更容易死。",
-    choices: [{ label: "夜探旧宅", next: "C3_N5", log: "你收好灯与刀，决定夜里动身。" }],
-  },
+    C3_N4C: {
+      id: "C3_N4C",
+      chapter: "第三章 · 残玉旧案",
+      title: "独自行动",
+      image: "assets/cg/C3_N4C.png",
+      text:
+        "你决定不完全信任谢征。\n\n" +
+        "你独自往旧宅方向走，心里盘算着每一条退路，也在心里给自己找理由：如果他知情，他早就该说；他不说，你凭什么相信他。\n\n" +
+        "可你也清楚：独行更轻快，也更容易死。\n\n" +
+        "天色渐暗，旧宅就在前头。",
+      choices: [
+        {
+          label: "直接进去探查",
+          next: "C3_N5",
+          effects: { stats: { danger: +2 } },
+          tags: ["危险+2"],
+          log: "你独自进去。你告诉自己，这只是去看一眼。",
+        },
+        {
+          label: "犹豫了一下，还是回去叫谢征",
+          next: "C3_N5",
+          effects: { stats: { affection: +5 } },
+          tags: ["好感+5"],
+          log: "你在旧宅门口站了很久，最终转身走回去。有些事，一个人扛着太重。",
+        },
+      ],
+    },
 
-  C3_N5: {
-    id: "C3_N5",
-    chapter: "第三章 · 残玉旧案",
-    title: "夜探旧宅",
-    image: "assets/cg/C3_N5.png",
-    text:
-      "废宅里风声穿堂，像有人低语。\n\n你在暗格里摸到半页账册，纹路竟与残玉隐隐相合。\n\n下一瞬，门外传来脚步——有人发现了你。",
-    choices: [
-      {
-        label: "呼叫谢征协助",
-        next: "C3_ENDA",
-        effects: { stats: { affection: +15, danger: -2 }, flags: { alliance: true } },
-        tags: ["好感+15", "危险-2", "同盟=true"],
-        log: "你呼叫谢征。他出现得太快，像早就预备好了这一刻。",
-      },
-      {
-        label: "独自逃离",
-        next: "C3_ENDB",
-        effects: { stats: { danger: +1 } },
-        tags: ["危险+1"],
-        log: "你带着账册逃回家。你保住了线索，却留下裂痕。",
-      },
-      {
-        label: "与神秘人对峙",
-        next: "C3_ENDC",
-        effects: { stats: { danger: +2, suspicion: +1 } },
-        tags: ["危险+2", "怀疑+1"],
-        log: "你选择对峙。你想看清对方是谁，也想看清自己有几分胆。",
-      },
-    ],
-  },
+    C3_N5: {
+      id: "C3_N5",
+      chapter: "第三章 · 残玉旧案",
+      title: "夜探旧宅",
+      image: "assets/cg/C3_N5.png",
+      text:
+        "废宅里风声穿堂，像有人在低声说话。\n\n" +
+        "你在东厢墙角摸到一处暗格，里头藏着半册账册，纸已发黄，但纹路竟与残玉上的刻纹隐隐相合。\n\n" +
+        "你把账册塞进怀里，刚要起身——\n\n" +
+        "门外，脚步声。\n\n" +
+        "有人发现了你。",
+      choices: [
+        {
+          label: "低声呼叫谢征",
+          next: "C3_ENDA",
+          effects: { stats: { affection: +15, danger: -3 }, flags: { alliance: true } },
+          tags: ["好感+15", "危险-3", "同盟=true"],
+          log: "你叫了他的名字。他出现得太快，像早就守在外头——或者早就跟着你了。",
+        },
+        {
+          label: "独自从侧门逃出",
+          next: "C3_ENDB",
+          effects: { stats: { danger: +2 } },
+          tags: ["危险+2"],
+          log: "你抱着账册从侧门逃出去。你保住了线索，但你知道谢征发现了你的独行，他的眼神变了。",
+        },
+        {
+          label: "不逃，直接与来人对峙",
+          next: "C3_ENDC",
+          effects: { stats: { danger: +3, suspicion: +1 } },
+          tags: ["危险+3", "怀疑+1"],
+          log: "你站定，等那人进来。你想看清楚对方是谁，也想看清楚自己有几分胆。",
+        },
+      ],
+    },
 
-  C3_ENDA: {
-    id: "C3_ENDA",
-    chapter: "第三章 · 残玉旧案",
-    title: "并肩初成",
-    image: "assets/cg/C3_ENDA.png",
-    text:
-      "谢征及时出现，把你拉出险境。\n\n你们第一次真正站在同一阵线。\n\n故事到此，新的路才刚开始。\n\n【第三章结尾：并肩初成】",
-    ending: true,
-    choices: [{ label: "回到标题", next: "start" }],
-  },
+    C3_ENDA: {
+      id: "C3_ENDA",
+      chapter: "第三章 · 残玉旧案",
+      title: "并肩初成",
+      image: "assets/cg/C3_ENDA.png",
+      text:
+        "谢征拉着你从后院翻出去，动作利落，像做过很多次。\n\n" +
+        "你们落在巷子里，他的手还扣着你的手腕，灯笼光照过来，你看见他脸上有一道细汗。\n\n" +
+        "他看着你，说：『以后别一个人去这种地方。』\n\n" +
+        "语气不重，却很认真。\n\n" +
+        "你第一次觉得，你们也许不只是利害关系。\n\n" +
+        "——【第三章结尾：并肩初成】",
+      ending: true,
+      choices: [{ label: "回到标题", next: "start" }],
+    },
 
-  C3_ENDB: {
-    id: "C3_ENDB",
-    chapter: "第三章 · 残玉旧案",
-    title: "各怀心思",
-    image: "assets/cg/C3_ENDB.png",
-    text:
-      "你带着账册逃回家。\n\n谢征看你的眼神变了，他察觉你有所隐瞒。\n\n故事到此，信任开始裂开。\n\n【第三章结尾：各怀心思】",
-    ending: true,
-    choices: [{ label: "回到标题", next: "start" }],
-  },
+    C3_ENDB: {
+      id: "C3_ENDB",
+      chapter: "第三章 · 残玉旧案",
+      title: "各怀心思",
+      image: "assets/cg/C3_ENDB.png",
+      text:
+        "你抱着账册逃回家，心跳还没平。\n\n" +
+        "谢征坐在灯下等你，没有问你去了哪里，也没有说什么。\n\n" +
+        "但你感觉到了——他知道你独自去了，他察觉你有所隐瞒。\n\n" +
+        "他看你的眼神和以前不一样了，多了一点说不清楚的什么。\n\n" +
+        "你们之间的信任，开始有了第一道裂缝。\n\n" +
+        "——【第三章结尾：各怀心思】",
+      ending: true,
+      choices: [{ label: "回到标题", next: "start" }],
+    },
 
-  C3_ENDC: {
-    id: "C3_ENDC",
-    chapter: "第三章 · 残玉旧案",
-    title: "险中得讯",
-    image: "assets/cg/C3_ENDC.png",
-    text:
-      "神秘人未下杀手，只留下一句：\n\n“你们查错了方向。”\n\n故事到此，线索更真也更假。\n\n【第三章结尾：险中得讯】",
-    ending: true,
-    choices: [{ label: "回到标题", next: "start" }],
-  },
+    C3_ENDC: {
+      id: "C3_ENDC",
+      chapter: "第三章 · 残玉旧案",
+      title: "险中得讯",
+      image: "assets/cg/C3_ENDC.png",
+      text:
+        "来人是个蒙面女子，年纪不大，手里握着刀，却没有出手。\n\n" +
+        "她打量了你很久，说：『你查错方向了。真正的证据不在宛州——在京城。』\n\n" +
+        "话音落，她翻墙走了。\n\n" +
+        "你站在废宅里，手里攥着账册，心里乱成一团。\n\n" +
+        "线索更真了，路却更远了。\n\n" +
+        "——【第三章结尾：险中得讯】",
+      ending: true,
+      choices: [{ label: "回到标题", next: "start" }],
+    },
   };
 
   window.RPG = window.RPG || {};
   window.RPG.content = { GAME_META, STAT_DEFS, ROLES, SCENES };
 })();
-
