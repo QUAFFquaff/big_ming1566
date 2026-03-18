@@ -1,45 +1,36 @@
 (() => {
   const GAME_META = {
-  title: "沉浸式权谋 RPG（Demo）",
-  build: "2026-03-17",
+  title: "《逐玉》视觉小说原型（前三章）",
+  build: "2026-03-18",
   };
 
   const STAT_DEFS = [
-  { key: "renown", label: "声望", min: 0, max: 100 },
-  { key: "silver", label: "银两", min: 0, max: 9999 },
-  { key: "influence", label: "权势", min: 0, max: 100 },
-  { key: "military", label: "兵势", min: 0, max: 100 },
+  { key: "affection", label: "谢征好感", min: 0, max: 100 },
+  { key: "suspicion", label: "身份怀疑", min: 0, max: 100 },
+  { key: "reputation", label: "名声", min: 0, max: 100 },
+  { key: "rumor", label: "流言压力", min: 0, max: 100 },
+  { key: "property", label: "家产压力", min: 0, max: 100 },
+  { key: "danger", label: "危险度", min: 0, max: 100 },
+  { key: "money", label: "银钱", min: 0, max: 10 },
   ];
 
   const ROLES = [
   {
-    id: "censor",
-    name: "清流御史",
-    desc: "你手握笔墨与风骨。言官之路危险重重，但也可能一言定国运。",
+    id: "fan_changyu",
+    name: "樊长玉",
+    desc: "雪夜收摊，风波上门。你只是想守住铺子与家人，却被卷入一枚碎玉与一桩旧案。",
     start: {
-      sceneId: "prologue",
-      stats: { renown: 55, silver: 80, influence: 35, military: 10 },
-      flags: { upright: true },
-    },
-  },
-  {
-    id: "merchant",
-    name: "盐商巨贾",
-    desc: "你擅长用银两打通关节。若把握得当，钱可通神；若失了分寸，便是抄家灭族。",
-    start: {
-      sceneId: "prologue",
-      stats: { renown: 30, silver: 260, influence: 25, military: 5 },
-      flags: { rich: true },
-    },
-  },
-  {
-    id: "general",
-    name: "边镇总兵",
-    desc: "你能用刀剑解决问题。朝堂不信你，你也不信朝堂；但天下终究要靠兵去守。",
-    start: {
-      sceneId: "prologue",
-      stats: { renown: 40, silver: 120, influence: 15, military: 55 },
-      flags: { iron: true },
+      sceneId: "C1_N1",
+      stats: {
+        affection: 20,
+        suspicion: 0,
+        reputation: 45,
+        rumor: 10,
+        property: 20,
+        danger: 5,
+        money: 3,
+      },
+      flags: { have_jade: false, marriage: false, alliance: false },
     },
   },
   ];
@@ -51,442 +42,570 @@
   const SCENES = {
   start: {
     id: "start",
-    chapter: "序章",
-    title: "选择你的角色",
+    chapter: "开始",
+    title: "《逐玉》· 视觉小说原型",
     text:
-      "风起于青萍之末。\n\n你将扮演不同身份踏入漩涡：清流、巨贾或边将。选择将影响初始属性、可走路线与可触发结局。",
+      "你将扮演樊长玉。\n\n雪夜异响、重伤男子、碎裂玉佩与密信残页……\n你的每次选择都会改变关系、名声与风险，并影响后续章节走向。",
     choices: [
-      { label: "以清流御史入局", next: "prologue", setRole: "censor" },
-      { label: "以盐商巨贾入局", next: "prologue", setRole: "merchant" },
-      { label: "以边镇总兵入局", next: "prologue", setRole: "general" },
+      { label: "开始故事", next: "C1_N1", setRole: "fan_changyu" },
     ],
   },
-
-  prologue: {
-    id: "prologue",
-    chapter: "第一回",
-    title: "风入京师",
-    text:
-      "京师传言：海运税银亏空，盐引走私横行，边镇军饷拖欠。\n\n皇城之内，人人都有账本。你要先选一条路——从盐、从税、还是从兵。",
+  C1_N1: {
+    id: "C1_N1",
+    chapter: "第一章 · 风雪夜救人",
+    title: "后院异响",
+    image: "assets/cg/C1_N1.png",
+    text: "收摊将尽，雪落无声。\n\n你正要合上后门，忽听院外一声闷响，像是有人从墙头跌落。\n\n这条巷子素来不太平——你要不要去看？",
     choices: [
+      { label: "查看异响", next: "C1_N2", log: "你提灯走向后院，想看清那声闷响从何而来。" },
       {
-        label: "先查盐：从盐引入手",
-        next: "salt_1",
-        effects: { stats: { influence: +4 } },
-        log: "你决定从盐引入手，先摸清利益链条。",
-      },
-      {
-        label: "先查税：追问海运亏空",
-        next: "tax_1",
-        effects: { stats: { renown: +4 } },
-        log: "你决定把税银亏空摆到台面上，让账本说话。",
-      },
-      {
-        label: "先稳兵：催饷以安边镇",
-        next: "army_1",
-        effects: { stats: { military: +4 } },
-        log: "你决定先稳住边镇军心，再谈朝堂攻防。",
+        label: "先锁门再查看",
+        next: "C1_N2",
+        effects: { stats: { suspicion: +1 } },
+        tags: ["谨慎+1"],
+        log: "你先把门闩扣牢，再提灯去看——谨慎，总能少吃亏。",
       },
     ],
   },
 
-  salt_1: {
-    id: "salt_1",
-    chapter: "第一回",
-    title: "盐引与人情",
+  C1_N2: {
+    id: "C1_N2",
+    chapter: "第一章 · 风雪夜救人",
+    title: "雪地发现伤者",
+    image: "assets/cg/C1_N2.png",
     text:
-      "你在盐运司外等了半个时辰。\n\n一名书吏递来一张条子：『要见主事，先递银。』你若应下，盐引档案立刻可查；不应，则要排到月末。",
+      "雪地里躺着一名男子，身上血迹被风雪糊成暗色。\n\n他右手死死攥着一枚碎裂玉佩，指节冻得发白。\n\n你若救他，便是把麻烦背进屋；若不救，今夜也许能睡得安稳。",
     choices: [
       {
-        label: "递银：先拿到档案再说",
-        next: "salt_2",
-        effects: { stats: { silver: -60, influence: +6 }, flags: { bribed: true } },
-        tags: ["银两-60", "权势+6", "立刻推进"],
-        log: "你用银两买来速度，也买来一枚钉子：『受贿』的把柄。",
+        label: "立刻施救",
+        next: "C1_N3A",
+        log: "你顾不得多想，把人背进屋里，先止血再说。",
       },
       {
-        label: "不递：按规矩排队",
-        next: "salt_wait",
-        effects: { stats: { renown: +6, influence: -2 }, flags: { upright: true } },
-        tags: ["声望+6", "权势-2", "更清白"],
-        log: "你选择守规矩。有人暗笑你迂，也有人暗记你硬。",
+        label: "拖去柴房观察",
+        next: "C1_N3B",
+        log: "你把人拖进柴房，心里盘算：先藏起来，别引火烧身。",
       },
       {
-        label: "反手点名：以法压人（需要声望≥50）",
-        next: "salt_pressure",
-        if: { stats: { renown: { gte: 50 } } },
-        effects: { stats: { influence: +4, renown: -3 }, flags: { enemies: true } },
-        tags: ["权势+4", "声望-3", "树敌"],
-        log: "你当场点名训斥书吏。盐运司的人记住了你。",
+        label: "搜身确认身份",
+        next: "C1_N3C",
+        log: "你先搜了搜他身上，至少得知道自己要救的是谁。",
       },
     ],
   },
 
-  salt_wait: {
-    id: "salt_wait",
-    chapter: "第一回",
-    title: "月末之前",
+  C1_N3A: {
+    id: "C1_N3A",
+    chapter: "第一章 · 风雪夜救人",
+    title: "立刻施救",
+    image: "assets/cg/C1_N3A.png",
     text:
-      "你按规矩递了文书。结果三天后，文书『不慎遗失』。\n\n有人好心提醒：若不想一直丢，得找个靠山。",
+      "你把人背进屋内，火盆旁的热气让他微微颤了一下。\n\n止血、清理、包扎——你手法熟练，像做过很多次。\n\n他没死。这一点，似乎就够了。",
     choices: [
       {
-        label: "找靠山：去拜会首辅门下",
-        next: "court_1",
-        effects: { stats: { influence: +6, silver: -30 }, flags: { patron: true } },
-        tags: ["权势+6", "银两-30"],
-        log: "你决定先结一条线，再谈清白与否。",
+        label: "询问姓名",
+        next: "C1_N4",
+        effects: { stats: { affection: +15, reputation: +1 } },
+        tags: ["好感+15", "名声+1"],
+        log: "你问他姓名，语气尽量放轻。你救了他，也想知道他是谁。",
       },
       {
-        label: "硬顶：继续按章办事",
-        next: "ending_clean",
-        effects: { stats: { renown: +10, influence: -6 }, flags: { martyr: true } },
-        tags: ["声望+10", "权势-6", "结局"],
-        log: "你选择硬顶。清名留下了，但路也到头了。",
+        label: "隐瞒姓名避免惹祸",
+        next: "C1_N4",
+        effects: { stats: { affection: +10, suspicion: +1, reputation: +1 } },
+        tags: ["好感+10", "谨慎+1", "名声+1"],
+        log: "你没有追问太多。活下去比真相更要紧——至少今晚如此。",
       },
     ],
   },
 
-  salt_pressure: {
-    id: "salt_pressure",
-    chapter: "第一回",
-    title: "强硬的代价",
+  C1_N3B: {
+    id: "C1_N3B",
+    chapter: "第一章 · 风雪夜救人",
+    title: "拖去柴房观察",
+    image: "assets/cg/C1_N3B.png",
     text:
-      "盐运司主事当夜就送来档案。\n\n但第二日，市井流言四起：『某某以清流自居，实则拿着密档勒索盐商。』你明白，这场仗开始了。",
+      "柴房里潮冷，草垛带着霉味。\n\n他被你拖进来时闷哼了一声，像是痛醒又昏。\n\n你站在门口犹豫：送药还是等天亮？",
     choices: [
       {
-        label: "顺势追打：公开一部分证据",
-        next: "court_1",
-        effects: { stats: { renown: +5, influence: +2 }, flags: { salt_case: true } },
-        tags: ["声望+5", "权势+2"],
-        log: "你放出证据，逼对手出牌。",
+        label: "深夜再送药",
+        next: "C1_N4",
+        effects: { stats: { affection: -5, suspicion: +1 } },
+        tags: ["好感-5", "谨慎+1"],
+        log: "你还是送了药。你不敢太靠近他，但也不想他死在你家柴房。",
       },
       {
-        label: "先收声：把证据交给可靠之人",
-        next: "court_1",
-        effects: { stats: { influence: +3 }, flags: { quiet: true, salt_case: true } },
-        tags: ["权势+3"],
-        log: "你暂避锋芒，把证据递到更高处。",
+        label: "天亮再说",
+        next: "C1_N4",
+        effects: { stats: { affection: -5, suspicion: +1, danger: +1 } },
+        tags: ["好感-5", "谨慎+1", "危险+1"],
+        log: "你决定等天亮。可你也知道，夜里最容易出事。",
       },
     ],
   },
 
-  salt_2: {
-    id: "salt_2",
-    chapter: "第一回",
-    title: "账本的阴影",
+  C1_N3C: {
+    id: "C1_N3C",
+    chapter: "第一章 · 风雪夜救人",
+    title: "搜身确认身份",
+    image: "assets/cg/C1_N3C.png",
     text:
-      "档案里只有半本账。\n\n另一半，被人撕走了。你知道那半本在哪儿：盐商会馆。\n\n夜里去取，可能遭伏；白天去谈，可能被拖。",
+      "你摸到一块残玉，纹样精细，不像寻常人家之物。\n\n他衣襟内侧还藏着一页被撕碎的纸，上头只有几行模糊的字迹。\n\n你忽然明白：这人身上带着麻烦，且不小。",
     choices: [
       {
-        label: "夜取：带两名心腹潜入",
-        next: "ambush",
-        effects: { stats: { military: +3 }, flags: { night_ops: true } },
-        tags: ["兵势+3", "高风险"],
-        log: "你选择夜取，赌对手没准备好。",
+        label: "归还残玉",
+        next: "C1_N4",
+        effects: { stats: { affection: -10 }, flags: { have_jade: false } },
+        tags: ["好感-10"],
+        log: "你把残玉放回他手边。你想保持距离，也想保住良心。",
       },
       {
-        label: "昼谈：以利换账（需要银两≥120）",
-        next: "deal",
-        if: { stats: { silver: { gte: 120 } } },
-        effects: { stats: { silver: -120, influence: +5 }, flags: { bought_ledger: true } },
-        tags: ["银两-120", "权势+5"],
-        log: "你用银两换来半本账，也换来一张人情券。",
-      },
-      {
-        label: "请兵：借边将之力（需要兵势≥50 或 角色=边镇总兵）",
-        next: "raid",
-        if: {
-          any: [{ stats: { military: { gte: 50 } } }, { flags: { role_general: true } }],
-        },
-        effects: { stats: { military: -6, influence: +6 }, flags: { raid: true } },
-        tags: ["兵势-6", "权势+6"],
-        log: "你借兵搜查。快、狠、有效，但朝堂会记一笔。",
+        label: "暂时藏起残玉",
+        next: "C1_N4",
+        effects: { stats: { affection: -10, suspicion: +2 }, flags: { have_jade: true } },
+        tags: ["好感-10", "怀疑+2", "持有残玉"],
+        log: "你把残玉藏起。你不知道它值不值命，但至少值一个答案。",
       },
     ],
   },
 
-  ambush: {
-    id: "ambush",
-    chapter: "第一回",
-    title: "伏与反伏",
+  C1_N4: {
+    id: "C1_N4",
+    chapter: "第一章 · 风雪夜救人",
+    title: "苏醒试探",
+    image: "assets/cg/C1_N4.png",
     text:
-      "巷口黑影一闪。\n\n你被伏击了。若你兵势足，尚可反杀；若不足，只能弃账而走。",
+      "他短暂醒来，目光像刀一样扫过屋内。\n\n他只说自己遭人追杀，别的都含糊。\n\n你听得出，他在试探你，你也在试探他。",
     choices: [
       {
-        label: "硬闯（需要兵势≥40）",
-        next: "court_1",
-        if: { stats: { military: { gte: 40 } } },
-        effects: { stats: { military: -10, renown: +3 }, flags: { ledger: true, wounds: true } },
-        tags: ["兵势-10", "声望+3"],
-        log: "你带伤夺回账本。京师的夜，记得你的血。",
+        label: "相信其说辞",
+        next: "C1_N5",
+        effects: { stats: { affection: +5 } },
+        tags: ["好感+5"],
+        log: "你点头，装作只是好心收留。你想看看他会不会把你当成敌人。",
       },
       {
-        label: "撤退：弃账保命",
-        next: "court_1",
-        effects: { stats: { influence: -4 }, flags: { enemies: true } },
-        tags: ["权势-4"],
-        log: "你选择撤退。对手知道你想要什么，也知道你会再来。",
+        label: "追问来历",
+        next: "C1_N5",
+        effects: { stats: { suspicion: +2 } },
+        tags: ["怀疑+2"],
+        log: "你追问来历。你救人可以，但不想救来一把刀。",
+      },
+      {
+        label: "警告天亮必须离开",
+        next: "C1_N5",
+        effects: { stats: { affection: -3, reputation: -1 } },
+        tags: ["好感-3", "名声-1"],
+        log: "你警告他天亮就走。你害怕麻烦，但也怕自己心软。",
       },
     ],
   },
 
-  deal: {
-    id: "deal",
-    chapter: "第一回",
-    title: "交易",
+  C1_N5: {
+    id: "C1_N5",
+    chapter: "第一章 · 风雪夜救人",
+    title: "官差巡街",
+    image: "assets/cg/C1_N5.png",
     text:
-      "盐商会馆里，香火与算盘并置。\n\n对方把半本账推给你：『你拿走也行，但要记一句——这世上没有白账。』",
+      "外头忽然传来脚步与喝问声。\n\n“搜！通缉要犯，近日必藏于城中——”\n\n你心口一紧：他们找的，会不会就是你屋里这人？",
     choices: [
       {
-        label: "收账：承诺不牵连会馆",
-        next: "court_1",
-        effects: { stats: { influence: +3, renown: -2 }, flags: { ledger: true, compromise: true } },
-        tags: ["权势+3", "声望-2"],
-        log: "你拿到账本，也留下了妥协的痕迹。",
+        label: "藏入地窖",
+        next: "C1_END",
+        effects: { stats: { danger: -1, suspicion: +1 } },
+        tags: ["危险-1", "谨慎+1"],
+        log: "你把他藏进地窖。你不确定这是不是对，但至少能拖过眼前这一关。",
       },
       {
-        label: "反悔：回头就上疏弹劾",
-        next: "ending_backfire",
-        effects: { stats: { renown: -8 }, flags: { trust_broken: true } },
-        tags: ["声望-8", "结局"],
-        log: "你翻脸。你以为是正义，对方只当你是背信。",
+        label: "假称远房表兄",
+        next: "C1_END",
+        effects: { stats: { reputation: +1, danger: +1 } },
+        tags: ["名声+1", "危险+1"],
+        log: "你编了个身份。话说出口那一刻，你知道自己已经站边了。",
+      },
+      {
+        label: "让他独自应付",
+        next: "C1_END",
+        effects: { stats: { affection: -10, danger: +2 } },
+        tags: ["好感-10", "危险+2"],
+        log: "你退到一旁，让他自己应付。你保全了自己，却失了他的信任。",
       },
     ],
   },
 
-  raid: {
-    id: "raid",
-    chapter: "第一回",
-    title: "兵入会馆",
+  C1_END: {
+    id: "C1_END",
+    chapter: "第一章 · 风雪夜救人",
+    title: "章节结尾",
+    image: "assets/cg/C1_END.png",
     text:
-      "兵丁掀开会馆大门。\n\n你拿到了账，也拿到了『以兵干政』的罪名雏形。",
+      "巡街声渐远，雪却下得更紧。\n\n谢征暂时留在猪肉铺。\n你明白，今夜之后，你再难置身事外。",
+    choices: [{ label: "进入第二章", next: "C2_N1", log: "你深吸一口气，准备迎接更难的明天。" }],
+  },
+
+  C2_N1: {
+    id: "C2_N1",
+    chapter: "第二章 · 假婚避祸",
+    title: "铺中风波",
+    image: "assets/cg/C2_N1.png",
+    text:
+      "第二日，大伯一家上门，张口便要你交出铺面。\n\n他们目光落在后院，话里话外都在试探：那个男人是谁？\n\n你感到家产与名声都在被人掐住。",
     choices: [
       {
-        label: "上疏：把账本交上去",
-        next: "court_1",
-        effects: { stats: { renown: +2, influence: +2 }, flags: { ledger: true, salt_case: true } },
-        tags: ["声望+2", "权势+2"],
-        log: "你把账本递上去，逼朝堂表态。",
+        label: "强硬驱赶",
+        next: "C2_N2A",
+        effects: { stats: { reputation: +2, property: +1 } },
+        tags: ["名声+2", "家产压力+1"],
+        log: "你持刀镇住众人。你赢了气势，却也更树敌。",
       },
       {
-        label: "压住：先把账本握在自己手里",
-        next: "court_1",
-        effects: { stats: { influence: +4, renown: -3 }, flags: { ledger: true, blackmail: true } },
-        tags: ["权势+4", "声望-3"],
-        log: "你把账本握在手里。你开始像你讨厌的人。",
+        label: "息事宁人",
+        next: "C2_N2B",
+        effects: { stats: { property: +2 } },
+        tags: ["家产压力+2"],
+        log: "你忍着火气，试图缓和。可有些人只会得寸进尺。",
+      },
+      {
+        label: "让谢征出面",
+        next: "C2_N2C",
+        effects: { stats: { affection: +10, suspicion: +1 } },
+        tags: ["好感+10", "怀疑+1"],
+        log: "谢征出面周旋，话锋冷静利落。你更怀疑他究竟是什么人。",
       },
     ],
   },
 
-  tax_1: {
-    id: "tax_1",
-    chapter: "第一回",
-    title: "海运亏空",
+  C2_N2A: {
+    id: "C2_N2A",
+    chapter: "第二章 · 假婚避祸",
+    title: "强硬驱赶",
+    image: "assets/cg/C2_N2A.png",
+    text: "你把刀横在案上，语气不重，却足够硬。\n\n大伯脸色难看地退开，临走时丢下一句狠话。",
+    choices: [{ label: "继续经营", next: "C2_N3", log: "你强撑着把日子过下去。可麻烦不会自己消失。" }],
+  },
+
+  C2_N2B: {
+    id: "C2_N2B",
+    chapter: "第二章 · 假婚避祸",
+    title: "息事宁人",
+    image: "assets/cg/C2_N2B.png",
+    text: "你压住火气，赔了笑脸。\n\n他们暂时退了，却像在你门口插了根针：随时会扎回来。",
+    choices: [{ label: "继续经营", next: "C2_N3", log: "你把铺子收拾好，心里却更沉。" }],
+  },
+
+  C2_N2C: {
+    id: "C2_N2C",
+    chapter: "第二章 · 假婚避祸",
+    title: "谢征出面",
+    image: "assets/cg/C2_N2C.png",
+    text: "谢征语气平静，字字都像算过。\n\n他几句话就让对方进退两难。你看着他，忽然觉得陌生。",
+    choices: [{ label: "继续经营", next: "C2_N3", log: "你让风波暂缓，但也把谢征推到了更亮的地方。" }],
+  },
+
+  C2_N3: {
+    id: "C2_N3",
+    chapter: "第二章 · 假婚避祸",
+    title: "通缉画像",
+    image: "assets/cg/C2_N3.png",
     text:
-      "账目上，亏空写得很工整。\n\n工整得像是提前准备好的答案。你可以当众追问，也可以私下探听。",
+      "城门口贴出新画像：眉眼模糊，却像极了谢征。\n\n继续同住，风险加剧。\n\n谢征却说：‘若要避祸，最稳的法子，是让所有人相信我们是夫妻。’",
     choices: [
       {
-        label: "当众追问：让对方下不了台",
-        next: "court_1",
-        effects: { stats: { renown: +6, influence: -2 }, flags: { tax_case: true } },
-        tags: ["声望+6", "权势-2"],
-        log: "你当众追问，逼对方露出破绽。",
+        label: "提议送他离城",
+        next: "C2_N4A",
+        effects: { stats: { affection: -10, danger: +1 } },
+        tags: ["好感-10", "危险+1"],
+        log: "你提议送他离城。你想甩开麻烦，也怕自己越陷越深。",
       },
       {
-        label: "私下探听：先找一名账房先生",
-        next: "clerk_1",
-        effects: { stats: { influence: +3, silver: -20 }, flags: { tax_case: true } },
-        tags: ["权势+3", "银两-20"],
-        log: "你私下探听，准备拿到更硬的证据。",
+        label: "接受他提出的假婚方案",
+        next: "C2_N4B",
+        effects: { stats: { affection: +10 }, flags: { marriage: true } },
+        tags: ["好感+10", "婚约=true"],
+        log: "你接受假婚。你不知这算不算赌，但你已经没有太多路。",
+      },
+      {
+        label: "要求先说实话",
+        next: "C2_N4C",
+        effects: { stats: { suspicion: +2 } },
+        tags: ["怀疑+2"],
+        log: "你要求他坦白。合作之前，你至少要知道他在躲什么。",
       },
     ],
   },
 
-  clerk_1: {
-    id: "clerk_1",
-    chapter: "第一回",
-    title: "账房先生",
+  C2_N4A: {
+    id: "C2_N4A",
+    chapter: "第二章 · 假婚避祸",
+    title: "送他离城",
+    image: "assets/cg/C2_N4A.png",
     text:
-      "账房先生低声说：『亏空不在账上，在船上。』\n\n他给你两条线索：一条指向码头，一条指向内库。",
+      "谢征摇头：‘我伤未愈，城外更危险。’\n\n他看你的眼神有些淡，像是把某种期待收回去了。",
+    choices: [{ label: "重新考虑假婚", next: "C2_N5", log: "你意识到，拖延只会让事更糟。" }],
+  },
+
+  C2_N4B: {
+    id: "C2_N4B",
+    chapter: "第二章 · 假婚避祸",
+    title: "接受假婚",
+    image: "assets/cg/C2_N4B.png",
+    text:
+      "你们约定口径，拟好称谓。\n\n从今天起，对外你们是夫妻。\n对内——你也说不清算什么。",
+    choices: [{ label: "准备婚书", next: "C2_N5", log: "你开始准备婚书，心里却像压了块石头。" }],
+  },
+
+  C2_N4C: {
+    id: "C2_N4C",
+    chapter: "第二章 · 假婚避祸",
+    title: "要求坦白",
+    image: "assets/cg/C2_N4C.png",
+    text:
+      "谢征沉默很久，只说自己牵涉旧案。\n\n他不能说全，但承诺：不会让你白白受牵连。\n\n你听见这句承诺，反而更不安。",
     choices: [
       {
-        label: "去码头：查货、查船、查人",
-        next: "dock_1",
-        effects: { stats: { military: +2, influence: +1 }, flags: { dock: true } },
-        tags: ["兵势+2", "权势+1"],
-        log: "你决定去码头。脏活往往在最潮湿的地方。",
+        label: "接受假婚",
+        next: "C2_N5",
+        effects: { stats: { affection: +5 }, flags: { marriage: true } },
+        tags: ["好感+5", "婚约=true"],
+        log: "你接受假婚。你不知道这是不是信任，但你决定先活下去。",
       },
       {
-        label: "入内库：查『谁批的条子』（需要权势≥35）",
-        next: "inner_1",
-        if: { stats: { influence: { gte: 35 } } },
-        effects: { stats: { influence: +4 }, flags: { inner: true } },
-        tags: ["权势+4"],
-        log: "你决定入内库。真正的权力往往写在一张条子上。",
+        label: "拒绝合作，但先把局面稳住",
+        next: "C2_N5",
+        effects: { stats: { affection: -5, suspicion: +2 } },
+        tags: ["好感-5", "怀疑+2"],
+        log: "你没答应他。可局面逼人，你只能先稳住外头。",
       },
     ],
   },
 
-  dock_1: {
-    id: "dock_1",
-    chapter: "第一回",
-    title: "码头",
+  C2_N5: {
+    id: "C2_N5",
+    chapter: "第二章 · 假婚避祸",
+    title: "成婚过场",
+    image: "assets/cg/C2_N5.png",
     text:
-      "码头上，你看到几箱『盐』的封条异常。\n\n你可以当场扣押，也可以放线钓鱼。",
+      "无论真心与否，你都得决定‘婚礼’的样子。\n\n它会影响外界的观感，也会影响你与谢征之间的距离。",
     choices: [
       {
-        label: "扣押：立刻查封",
-        next: "court_1",
-        effects: { stats: { renown: +3, influence: +1 }, flags: { dock_seized: true } },
-        tags: ["声望+3", "权势+1"],
-        log: "你当场扣押。证据到手，但动静也更大了。",
+        label: "简办只求遮掩",
+        next: "C2_END",
+        log: "你选择简办。只求遮掩，不谈体面。",
       },
       {
-        label: "放线：跟踪货主",
-        next: "court_1",
-        effects: { stats: { influence: +4, renown: -1 }, flags: { dock_tail: true } },
-        tags: ["权势+4", "声望-1"],
-        log: "你选择跟踪。证据可能更完整，但更容易被反侦。",
+        label: "体面操办稳住族人（花费银钱）",
+        next: "C2_END",
+        effects: { stats: { money: -1, reputation: +1, rumor: -1 } },
+        tags: ["银钱-1", "名声+1", "流言-1"],
+        if: { stats: { money: { gte: 1 } } },
+        log: "你体面操办。银钱少了，风声也小了些。",
+      },
+      {
+        label: "拒绝婚礼只演戏",
+        next: "C2_END",
+        effects: { stats: { affection: -5, rumor: +1 } },
+        tags: ["好感-5", "流言+1"],
+        log: "你拒绝婚礼，只演给外人看。谢征的目光沉了沉。",
       },
     ],
   },
 
-  inner_1: {
-    id: "inner_1",
-    chapter: "第一回",
-    title: "内库条子",
+  C2_END: {
+    id: "C2_END",
+    chapter: "第二章 · 假婚避祸",
+    title: "章节结尾",
+    image: "assets/cg/C2_END.png",
     text:
-      "内库门槛高，规矩更高。\n\n你拿到一张条子：签名被刮掉了，只留半个印。你需要决定如何用它。",
+      "假婚关系确立。\n\n谢征正式住入樊家后院。\n从此你们要共同对抗外界，也要共同面对彼此的秘密。",
+    choices: [{ label: "进入第三章", next: "C3_N1", log: "你掀开新的一页，纸上却已沾了旧案的灰。" }],
+  },
+
+  C3_N1: {
+    id: "C3_N1",
+    chapter: "第三章 · 残玉旧案",
+    title: "婚后清晨",
+    image: "assets/cg/C3_N1.png",
+    text:
+      "邻里议论纷纷，铺子生意也被流言影响。\n\n你明白：名声是刀，能护你，也能伤你。",
     choices: [
       {
-        label: "交给首辅：借力打力",
-        next: "court_1",
-        effects: { stats: { influence: +6 }, flags: { patron: true } },
-        tags: ["权势+6"],
-        log: "你把条子交给首辅门下。你获得庇护，也欠下人情。",
+        label: "主动解释婚事",
+        next: "C3_N2A",
+        effects: { stats: { reputation: +1, suspicion: +1, rumor: -1 } },
+        tags: ["名声+1", "怀疑+1", "流言-1"],
+        log: "你主动解释婚事。流言稍缓，但你也暴露了婚事仓促。",
       },
       {
-        label: "自己留着：作为谈判筹码",
-        next: "court_1",
-        effects: { stats: { influence: +4, renown: -2 }, flags: { blackmail: true } },
-        tags: ["权势+4", "声望-2"],
-        log: "你把条子握在手里。你离权力更近，也更危险。",
+        label: "埋头做生意",
+        next: "C3_N2B",
+        effects: { stats: { money: +1, rumor: +1 } },
+        tags: ["银钱+1", "流言+1"],
+        log: "你埋头做生意。短期有收益，流言却更发酵。",
+      },
+      {
+        label: "请谢征帮忙记账招呼",
+        next: "C3_N2C",
+        effects: { stats: { affection: +10, suspicion: +1, rumor: -1 } },
+        tags: ["好感+10", "怀疑+1", "流言-1"],
+        log: "谢征帮忙得体利落。你更怀疑他的来历，也更离不开他的手段。",
       },
     ],
   },
 
-  army_1: {
-    id: "army_1",
-    chapter: "第一回",
-    title: "催饷",
-    text:
-      "边镇来信：『饷银再不到账，兵就要散。』\n\n你可以强硬催饷，也可以先找银两垫付以稳军心。",
+  C3_N2A: {
+    id: "C3_N2A",
+    chapter: "第三章 · 残玉旧案",
+    title: "主动解释",
+    image: "assets/cg/C3_N2A.png",
+    text: "你把话说清楚，脸上带笑，背后却发冷。\n\n有些人听进去了，有些人只想看你出丑。",
+    choices: [{ label: "前往集市", next: "C3_N3", log: "你决定去集市转转，打听些消息。" }],
+  },
+
+  C3_N2B: {
+    id: "C3_N2B",
+    chapter: "第三章 · 残玉旧案",
+    title: "埋头做生意",
+    image: "assets/cg/C3_N2B.png",
+    text: "你把刀磨得更亮，把账记得更细。\n\n可流言像灰，落在每个来客的眼里。",
+    choices: [{ label: "前往集市", next: "C3_N3", log: "你还是得出去一趟，看看风声从哪儿来。" }],
+  },
+
+  C3_N2C: {
+    id: "C3_N2C",
+    chapter: "第三章 · 残玉旧案",
+    title: "谢征帮忙",
+    image: "assets/cg/C3_N2C.png",
+    text: "谢征记账极快，招呼客人也极稳。\n\n这不像一个‘逃命之人’该有的从容。",
+    choices: [{ label: "前往集市", next: "C3_N3", log: "你带着疑问出门，想找个答案。" }],
+  },
+
+  C3_N3: {
+    id: "C3_N3",
+    chapter: "第三章 · 残玉旧案",
+    title: "当铺线索",
+    image: "assets/cg/C3_N3.png",
+    text: (state) => {
+      const have = !!state.flags?.have_jade;
+      return have
+        ? "当铺掌柜盯着你拿出的残玉，神色一变。\n\n‘这纹样……我见过。十余年前，一桩灭门旧案里，也有同样的玉。’\n\n他压低声音：‘你别再拿出来，拿出来就是招祸。’"
+        : "当铺掌柜提起一则传闻：十余年前曾有灭门旧案，牵连到一枚刻纹极深的玉。\n\n你听着，只觉得后颈发凉。\n\n若你手里真有那样的东西——你也许已经走进局里了。";
+    },
     choices: [
       {
-        label: "强硬催饷：直达御前",
-        next: "court_1",
-        effects: { stats: { military: +6, influence: -2 }, flags: { army_case: true } },
-        tags: ["兵势+6", "权势-2"],
-        log: "你把军饷问题直达御前。朝堂震动，但也有人恨你多事。",
+        label: "继续追问旧案",
+        next: "C3_N4A",
+        effects: { stats: { danger: +1, suspicion: +1 } },
+        tags: ["危险+1", "怀疑+1"],
+        log: "你继续追问。越问越危险，但你停不下来。",
       },
       {
-        label: "垫付：先用银两稳军（需要银两≥150）",
-        next: "court_1",
-        if: { stats: { silver: { gte: 150 } } },
-        effects: { stats: { silver: -150, military: +8, renown: +2 }, flags: { army_case: true } },
-        tags: ["银两-150", "兵势+8", "声望+2"],
-        log: "你垫付军饷稳住军心。银子少了，命却多了几条。",
+        label: "先回去与谢征商量",
+        next: "C3_N4B",
+        effects: { stats: { affection: +5 } },
+        tags: ["好感+5"],
+        log: "你决定先回去商量。你不想再一个人扛着这份不安。",
       },
       {
-        label: "做交易：让盐商出银换军权（需要盐商身份）",
-        next: "court_1",
-        if: { flags: { role_merchant: true } },
-        effects: { stats: { silver: +120, influence: +4, renown: -5 }, flags: { dirty_deal: true, army_case: true } },
-        tags: ["银两+120", "权势+4", "声望-5"],
-        log: "你做了交易：银两入军，利益入账。有人称你务实，有人称你卖国。",
+        label: "隐瞒线索自行调查",
+        next: "C3_N4C",
+        effects: { stats: { affection: -10, suspicion: +2 } },
+        tags: ["好感-10", "怀疑+2"],
+        log: "你选择隐瞒。你不完全信他，也不愿把命押在他身上。",
       },
     ],
   },
 
-  court_1: {
-    id: "court_1",
-    chapter: "第二回",
-    title: "朝堂之上",
+  C3_N4A: {
+    id: "C3_N4A",
+    chapter: "第三章 · 残玉旧案",
+    title: "追问旧案",
+    image: "assets/cg/C3_N4A.png",
     text:
-      "你带着线索与账本走上朝堂。\n\n对手笑问：『你要的是国法，还是你的位置？』\n\n此刻，你必须选择：公开、妥协、或反制。",
+      "你得知旧案幸存者可能藏身宛州。\n\n线索像火星，落在干草上。\n你知道从这一刻起，追查会变成追命。",
+    choices: [{ label: "夜探旧宅", next: "C3_N5", log: "你决定夜探旧宅，去找更硬的证据。" }],
+  },
+
+  C3_N4B: {
+    id: "C3_N4B",
+    chapter: "第三章 · 残玉旧案",
+    title: "与谢征商量",
+    image: "assets/cg/C3_N4B.png",
+    text:
+      "谢征听完，神色罕见动摇。\n\n他没有否认，只说：‘此案与我过去有关。’\n\n你第一次意识到：你们可能不得不并肩。",
+    choices: [{ label: "夜探旧宅", next: "C3_N5", log: "你决定和他一起准备，夜里去旧宅一探。" }],
+  },
+
+  C3_N4C: {
+    id: "C3_N4C",
+    chapter: "第三章 · 残玉旧案",
+    title: "自行调查",
+    image: "assets/cg/C3_N4C.png",
+    text:
+      "你决定不完全相信谢征。\n\n你独自摸查旧宅，心里盘算每条退路。\n\n可你也知道：独行更轻快，也更容易死。",
+    choices: [{ label: "夜探旧宅", next: "C3_N5", log: "你收好灯与刀，决定夜里动身。" }],
+  },
+
+  C3_N5: {
+    id: "C3_N5",
+    chapter: "第三章 · 残玉旧案",
+    title: "夜探旧宅",
+    image: "assets/cg/C3_N5.png",
+    text:
+      "废宅里风声穿堂，像有人低语。\n\n你在暗格里摸到半页账册，纹路竟与残玉隐隐相合。\n\n下一瞬，门外传来脚步——有人发现了你。",
     choices: [
       {
-        label: "公开：把证据全摆出来（需要至少一个案件线索）",
-        next: "ending_reform",
-        if: { any: [{ flags: { salt_case: true } }, { flags: { tax_case: true } }, { flags: { army_case: true } }, { flags: { ledger: true } }] },
-        effects: { stats: { renown: +10, influence: +2 }, flags: { truth: true } },
-        tags: ["声望+10", "结局"],
-        log: "你选择公开。风暴将至，但你不再回头。",
+        label: "呼叫谢征协助",
+        next: "C3_ENDA",
+        effects: { stats: { affection: +15, danger: -2 }, flags: { alliance: true } },
+        tags: ["好感+15", "危险-2", "同盟=true"],
+        log: "你呼叫谢征。他出现得太快，像早就预备好了这一刻。",
       },
       {
-        label: "妥协：换取一个『安全的胜利』",
-        next: "ending_compromise",
-        effects: { stats: { influence: +8, renown: -6 }, flags: { compromise: true } },
-        tags: ["权势+8", "声望-6", "结局"],
-        log: "你选择妥协。你赢了一局，但你知道自己输了些什么。",
+        label: "独自逃离",
+        next: "C3_ENDB",
+        effects: { stats: { danger: +1 } },
+        tags: ["危险+1"],
+        log: "你带着账册逃回家。你保住了线索，却留下裂痕。",
       },
       {
-        label: "反制：用把柄逼对方让步（需要黑料）",
-        next: "ending_blackmail",
-        if: { any: [{ flags: { bribed: true } }, { flags: { blackmail: true } }, { flags: { ledger: true } }] },
-        effects: { stats: { influence: +12, renown: -10 }, flags: { tyrant: true } },
-        tags: ["权势+12", "声望-10", "结局"],
-        log: "你选择反制。你把别人变成棋子，也把自己变成了棋手。",
+        label: "与神秘人对峙",
+        next: "C3_ENDC",
+        effects: { stats: { danger: +2, suspicion: +1 } },
+        tags: ["危险+2", "怀疑+1"],
+        log: "你选择对峙。你想看清对方是谁，也想看清自己有几分胆。",
       },
     ],
   },
 
-  ending_clean: {
-    id: "ending_clean",
-    chapter: "终章",
-    title: "清名",
+  C3_ENDA: {
+    id: "C3_ENDA",
+    chapter: "第三章 · 残玉旧案",
+    title: "并肩初成",
+    image: "assets/cg/C3_ENDA.png",
     text:
-      "你把自己守得很干净。\n\n但在这座城里，干净的人往往走不远。\n\n你被外放，远离漩涡。\n\n【结局：清名】",
+      "谢征及时出现，把你拉出险境。\n\n你们第一次真正站在同一阵线。\n\n故事到此，新的路才刚开始。\n\n【第三章结尾：并肩初成】",
     ending: true,
     choices: [{ label: "回到标题", next: "start" }],
   },
 
-  ending_backfire: {
-    id: "ending_backfire",
-    chapter: "终章",
-    title: "反噬",
+  C3_ENDB: {
+    id: "C3_ENDB",
+    chapter: "第三章 · 残玉旧案",
+    title: "各怀心思",
+    image: "assets/cg/C3_ENDB.png",
     text:
-      "你翻脸太快。\n\n从此，你的信用成了笑话；你的敌人却变成了同盟。\n\n你失去立足之地。\n\n【结局：反噬】",
+      "你带着账册逃回家。\n\n谢征看你的眼神变了，他察觉你有所隐瞒。\n\n故事到此，信任开始裂开。\n\n【第三章结尾：各怀心思】",
     ending: true,
     choices: [{ label: "回到标题", next: "start" }],
   },
 
-  ending_reform: {
-    id: "ending_reform",
-    chapter: "终章",
-    title: "风暴与改制",
+  C3_ENDC: {
+    id: "C3_ENDC",
+    chapter: "第三章 · 残玉旧案",
+    title: "险中得讯",
+    image: "assets/cg/C3_ENDC.png",
     text:
-      "你把证据摊在朝堂上。\n\n有人哭，有人笑，有人沉默。\n\n改制从来不靠一人，但你点燃了引线。\n\n【结局：风暴与改制】",
-    ending: true,
-    choices: [{ label: "回到标题", next: "start" }],
-  },
-
-  ending_compromise: {
-    id: "ending_compromise",
-    chapter: "终章",
-    title: "安全的胜利",
-    text:
-      "你赢了一个『安全的胜利』。\n\n你的位置更稳了，敌人更少了。\n\n但很多事，也就到此为止了。\n\n【结局：安全的胜利】",
-    ending: true,
-    choices: [{ label: "回到标题", next: "start" }],
-  },
-
-  ending_blackmail: {
-    id: "ending_blackmail",
-    chapter: "终章",
-    title: "棋手",
-    text:
-      "你用把柄逼对方让步。\n\n京师安静了三个月，随后更大的风暴卷来。\n\n你成了棋手，也成了更大的靶子。\n\n【结局：棋手】",
+      "神秘人未下杀手，只留下一句：\n\n“你们查错了方向。”\n\n故事到此，线索更真也更假。\n\n【第三章结尾：险中得讯】",
     ending: true,
     choices: [{ label: "回到标题", next: "start" }],
   },

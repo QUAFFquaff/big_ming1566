@@ -10,6 +10,8 @@
     chapter: $("chapter"),
     sceneTitle: $("sceneTitle"),
     sceneText: $("sceneText"),
+    sceneImageWrap: $("sceneImageWrap"),
+    sceneImage: $("sceneImage"),
     choices: $("choices"),
     roleCard: $("roleCard"),
     log: $("log"),
@@ -70,22 +72,19 @@
       </div>
     `;
 
+    const tags = [];
+    if (state.flags?.have_jade) tags.push(`<span class="tag warn">持有残玉</span>`);
+    if (state.flags?.marriage) tags.push(`<span class="tag good">婚约</span>`);
+    if (state.flags?.alliance) tags.push(`<span class="tag good">同盟</span>`);
+
     els.roleCard.innerHTML = `
       <div class="role">
         <div class="role__name">${role.name}</div>
         <div class="role__desc">${role.desc}</div>
         <div class="role__grid">
-          ${kv("声望", state.stats.renown)}
-          ${kv("银两", state.stats.silver)}
-          ${kv("权势", state.stats.influence)}
-          ${kv("兵势", state.stats.military)}
+          ${STAT_DEFS.map((def) => kv(def.label, state.stats?.[def.key] ?? 0)).join("")}
         </div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:2px;">
-          <span class="tag">${state.flags?.upright ? "清白" : "世故"}</span>
-          ${state.flags?.patron ? `<span class="tag good">有靠山</span>` : ""}
-          ${state.flags?.enemies ? `<span class="tag bad">树敌</span>` : ""}
-          ${state.flags?.ledger ? `<span class="tag warn">握账本</span>` : ""}
-        </div>
+        ${tags.length ? `<div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:2px;">${tags.join("")}</div>` : ""}
       </div>
     `;
   }
@@ -147,7 +146,21 @@
 
     els.chapter.textContent = `${scene.chapter || ""}${scene.ending ? " · 结局" : ""}`.trim();
     els.sceneTitle.textContent = scene.title;
-    els.sceneText.textContent = scene.text;
+    const text = typeof scene.text === "function" ? scene.text(state) : scene.text;
+    els.sceneText.textContent = text || "";
+
+    const imgSrc = scene.image || "";
+    if (els.sceneImageWrap && els.sceneImage && imgSrc) {
+      els.sceneImage.src = imgSrc;
+      els.sceneImage.alt = scene.title || "";
+      els.sceneImageWrap.style.display = "";
+    } else if (els.sceneImageWrap) {
+      els.sceneImageWrap.style.display = "none";
+      if (els.sceneImage) {
+        els.sceneImage.removeAttribute("src");
+        els.sceneImage.alt = "";
+      }
+    }
 
     const available = listAvailableChoices(scene, state);
     els.choices.innerHTML = "";

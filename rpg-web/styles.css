@@ -125,6 +125,19 @@ label.file input{ display:none; }
 
 .scene{ padding:16px; }
 .scene__title{ margin:0; font-size:20px; letter-spacing:.2px; }
+.scene__image{
+  margin-top:12px;
+  border:1px solid var(--border);
+  border-radius:14px;
+  overflow:hidden;
+  background: rgba(11,16,32,.35);
+  box-shadow: 0 18px 50px var(--shadow);
+}
+.scene__imageImg{
+  display:block;
+  width:100%;
+  height:auto;
+}
 .scene__text{
   margin-top:10px;
   color: rgba(233,238,252,.92);
