@@ -223,7 +223,107 @@ Overall palette: cold silver-blue, with only that one door-crack warm glow as th
 
 ---
 
-## 第二章新增 CG
+---
+
+## 第二章 CG · 假婚避祸
+
+> 所有图末尾追加：`--cref https://raw.githubusercontent.com/QUAFFquaff/big_ming1566/main/rpg-web/assets/cg/C1_N1v2.jpg --sref https://raw.githubusercontent.com/QUAFFquaff/big_ming1566/main/rpg-web/assets/cg/C1_N1v2.jpg --cw 80 --ar 16:9`
+
+---
+
+### `C2_N1.png` — 大伯上门
+
+**场景描述：**
+Daytime interior of a small shop. An older man (the uncle, 50s, heavy-set, calculating eyes, plain merchant clothing) stands inside the shop doorway with two family members behind him, eyes scanning back and forth between the young woman and the rear courtyard door — a cold merchant's appraisal.
+The young woman stands behind the counter, expression guarded and composed, one hand resting on the counter surface.
+The rear courtyard door is visible in the background, slightly ajar, implying someone is listening from behind it.
+Tension fills the space between the two parties — an unspoken power struggle over property and survival.
+Warm but oppressive indoor light, dust motes in the air.
+
+**附加：** 【女主角色 tag】 + 【统一风格 tag】（无谢征，只有门缝暗示他的存在）
+
+---
+
+### `C2_N2A.png` — 强硬驱赶
+
+**场景描述：**
+The young woman stands behind the shop counter, a cleaver laid flat and deliberately across the countertop — not raised, just placed there, which makes it more threatening.
+Her expression is cold and unflinching, chin slightly lifted, posture absolutely steady.
+The uncle and his family are retreating toward the door, the uncle's face darkened with anger and humiliation.
+In the background near the inner room doorway, Xie Zheng stands silently watching the entire scene, arms at his sides, expression unreadable but attentive.
+Hard side-lighting casting dramatic shadows, dust in the air.
+
+**附加：** 【女主角色 tag】 + 【谢征角色 tag】 + 【统一风格 tag】
+
+---
+
+### `C2_N2B.png` — 息事宁人
+
+**场景描述：**
+Kitchen interior, warm dim light. The young woman sits alone at a rough wooden table, hands resting on the table surface — they are trembling slightly, though she tries to hide it.
+Xie Zheng enters quietly from the left, setting a bowl of hot water on the table beside her hands without a word.
+Steam rises from the bowl.
+He doesn't look at her directly, doesn't ask what happened — just places the bowl and stands nearby.
+She looks down at the bowl, emotions complex and unspoken.
+The kitchen is small and cluttered, giving a sense of warmth and confinement together.
+
+**附加：** 【女主角色 tag】 + 【谢征角色 tag】 + 【统一风格 tag】
+
+---
+
+### `C2_N2C.png` — 谢征出面
+
+**场景描述：**
+Shop interior. Xie Zheng stands in the foreground, positioned slightly in front of the young woman, addressing the uncle with absolute calm — his posture unhurried, voice measured, but every word precisely calculated to corner the opponent.
+The uncle's face is frozen mid-expression — caught between anger and having no comeback, like someone grabbed by the throat.
+The young woman stands slightly behind Xie Zheng, watching him from the side with a complicated, half-unsettled expression — he suddenly feels like a stranger to her.
+The contrast between Xie Zheng's controlled black robes and the uncle's flustered retreat tells the entire story.
+
+**附加：** 【女主角色 tag】 + 【谢征角色 tag】 + 【统一风格 tag】
+
+---
+
+### `C2_N3.png` — 通缉画像
+
+**场景描述：**
+Indoor scene, dusk light. A wanted poster lies flat on the low table between them — the portrait on it is blurred but bears a 70% resemblance to Xie Zheng.
+Xie Zheng sits across from the young woman, looking at the poster for a long moment, then shifts his gaze to her face.
+The young woman stares at the poster, expression carefully blank, processing.
+The room is very quiet — this silence is the visual subject of the scene.
+Dim warm candlelight, a heavy atmosphere of unspoken decision-making.
+The wanted poster is the focal point of the foreground; their faces in the midground.
+
+**附加：** 【女主角色 tag】 + 【谢征角色 tag】 + 【统一风格 tag】
+
+---
+
+### `C2_N4A.png` — 无法出城
+
+**场景描述：**
+The same room with the wanted poster still on the table.
+Xie Zheng shakes his head slowly, jaw set, glancing at the poster then back to the young woman's face — his expression calm but carrying the weight of someone who has calculated every option and found them closed.
+He sits slightly forward, elbows on knees, posture of a man cornered but not broken.
+The young woman looks at him steadily, trying to read whether he's telling the truth.
+The wanted poster between them on the table anchors the tension.
+Evening light, shadows deepening.
+
+**附加：** 【女主角色 tag】 + 【谢征角色 tag】 + 【统一风格 tag】
+
+---
+
+### `C2_N4B.png` — 答应假婚
+
+**场景描述：**
+The young woman has just spoken — the moment right after she says yes.
+A beat of stillness fills the room, as if the air itself shifted shape.
+Xie Zheng looks at her steadily, expression unreadable but his gaze is intent and searching — "You won't regret this?"
+The young woman meets his gaze without looking away — not warm, not cold, just direct and resolved.
+The space between them across the low table feels charged.
+Candlelight flickers slightly. The wanted poster is still on the table, partially covered by a teacup.
+
+**附加：** 【女主角色 tag】 + 【谢征角色 tag】 + 【统一风格 tag】
+
+---
 
 ### `C2_RULES.png` — 约法三章 ⭐
 
@@ -240,3 +340,45 @@ Background: carved wooden screen partition, candlelight casting swaying warm sha
 contrasting with the cold night visible through a side window.
 
 **附加：** 【女主角色 tag】 + 【谢征角色 tag】 + 【统一风格 tag】
+
+---
+
+### `C2_N4C.png` — 要求坦白
+
+**场景描述：**
+A long silence just ended.
+Xie Zheng sits with his head slightly bowed, having just spoken — confessing the existence of an old unresolved case, people who want him dead before it closes.
+Now he lifts his head to look at her directly: "The less you know, the safer you are."
+His expression is rare — not guarded, not calculating, but something quieter and more vulnerable underneath the surface.
+The young woman listens, her expression shifting from suspicion to something more unsettled — because what he said sounds like protection.
+Candlelight between them on the table.
+
+**附加：** 【女主角色 tag】 + 【谢征角色 tag】 + 【统一风格 tag】
+
+---
+
+### `C2_N5.png` — 婚礼形式
+
+**场景描述：**
+Daytime, soft winter light. The two sit in the main room, a blank sheet of paper on the table between them — the unwritten wedding plan.
+Xie Zheng leans back slightly, arms loosely folded, watching her with an expression that says: this is your world, you decide.
+"You know the people here better than I do."
+The young woman looks at the paper, then glances at him — trying to figure out if this is trust or just him passing the burden.
+A quieter scene: no crisis, just two people figuring out a shared survival arrangement.
+Pale winter sunlight through lattice windows.
+
+**附加：** 【女主角色 tag】 + 【谢征角色 tag】 + 【统一风格 tag】
+
+---
+
+### `C2_END.png` — 第二章终
+
+**场景描述：**
+Night. The fake marriage is settled.
+Split composition: a thin wall divides the frame. On the left, the young woman lies awake in her room, staring at the ceiling, oil lamp casting a small warm circle of light around her. On the right through the wall, Xie Zheng sits up slightly in the dark, motionless — it's unclear if he's asleep or awake.
+The wall between them is the visual and emotional center of the image.
+Both figures are enclosed in their own light and shadow, separately carrying thoughts the other can't hear.
+Outside: snow has stopped. The courtyard is very still.
+A quiet, ambiguous warmth — the feeling of: one more person in the world is now connected to you.
+
+**附加：** 【女主角色 tag】 + 【谢征角色 tag】 + 【统一风格 tag】（C2_END 纯背景/氛围图可去掉 --cref，只保留 --sref）
