@@ -1,58 +1,71 @@
 (() => {
-  const { STAT_DEFS, GAME_META } = window.RPG.content;
+  const { GAME_META } = window.RPG.content;
   const { newGame, getRole, getScene, listAvailableChoices, step } = window.RPG.engine;
   const { saveToLocal, loadFromLocal, downloadJson, readJsonFile } = window.RPG.storage;
 
   const $ = (id) => document.getElementById(id);
 
   const els = {
-    stats: $("stats"),
-    chapter: $("chapter"),
-    sceneTitle: $("sceneTitle"),
-    sceneText: $("sceneText"),
-    sceneImageWrap: $("sceneImageWrap"),
-    sceneImage: $("sceneImage"),
-    choices: $("choices"),
-    roleCard: $("roleCard"),
-    log: $("log"),
-    buildInfo: $("buildInfo"),
-    btnNew: $("btnNew"),
-    btnSave: $("btnSave"),
-    btnLoad: $("btnLoad"),
-    btnExport: $("btnExport"),
-    importFile: $("importFile"),
+    chapter:       $("chapter"),
+    sceneTitle:    $("sceneTitle"),
+    sceneText:     $("sceneText"),
+    sceneImageWrap:$("sceneImageWrap"),
+    sceneImage:    $("sceneImage"),
+    choices:       $("choices"),
+    roleCard:      $("roleCard"),
+    log:           $("log"),
+    buildInfo:     $("buildInfo"),
+    btnNew:        $("btnNew"),
+    btnSave:       $("btnSave"),
+    btnLoad:       $("btnLoad"),
+    btnExport:     $("btnExport"),
+    importFile:    $("importFile"),
   };
 
-  function fmtDelta(n) {
-    if (!n) return null;
-    return n > 0 ? `+${n}` : `${n}`;
-  }
+  // ─── Toast 系统 ───────────────────────────────────────────────
+  const TOAST_MAP = {
+    affection:  { pos:{icon:'♡',text:'心弦微动',  cls:'good'}, neg:{icon:'♡',text:'渐生疏离',  cls:'bad'} },
+    suspicion:  { pos:{icon:'⚠',text:'疑云渐浓',  cls:'bad' }, neg:{icon:'✦',text:'心防稍松',  cls:'warn'} },
+    danger:     { pos:{icon:'⚠',text:'险象渐生',  cls:'bad' }, neg:{icon:'✦',text:'危机稍退',  cls:'warn'} },
+    money:      { pos:{icon:'◈',text:'银钱入账',  cls:'good'}, neg:{icon:'◈',text:'银钱支出',  cls:'warn'} },
+    reputation: { pos:{icon:'✦',text:'声名渐显',  cls:'good'}, neg:{icon:'✦',text:'名声有损',  cls:'bad'} },
+    rumor:      { pos:{icon:'⚠',text:'流言四起',  cls:'bad' }, neg:{icon:'✦',text:'流言渐息',  cls:'good'} },
+    property:   { pos:{icon:'⚠',text:'家产承压',  cls:'bad' }, neg:{icon:'✦',text:'压力稍减',  cls:'good'} },
+  };
+  // 优先展示最有叙事冲击力的 stat
+  const TOAST_PRIORITY = ['affection','danger','suspicion','money','reputation','rumor','property'];
 
-  function deltaClass(n) {
-    if (!n) return "";
-    if (n > 0) return "good";
-    if (n < 0) return "bad";
-    return "warn";
-  }
+  const toastContainer = (() => {
+    const el = document.createElement('div');
+    el.className = 'toast-container';
+    document.body.appendChild(el);
+    return el;
+  })();
 
-  function statHtml(state) {
-    const parts = [];
-    for (const def of STAT_DEFS) {
-      const v = state.stats?.[def.key] ?? 0;
-      const d = state.lastDelta?.[def.key] ?? 0;
-      parts.push(`
-        <div class="stat">
-          <div class="stat__label">${def.label}</div>
-          <div class="stat__value">
-            <span>${v}</span>
-            ${d ? `<span class="stat__delta ${deltaClass(d)}">${fmtDelta(d)}</span>` : ""}
-          </div>
-        </div>
-      `);
+  function showToast(delta) {
+    if (!delta) return;
+    const shown = [];
+    for (const key of TOAST_PRIORITY) {
+      const dv = delta[key];
+      if (!dv) continue;
+      const entry = TOAST_MAP[key];
+      if (!entry) continue;
+      shown.push(dv > 0 ? entry.pos : entry.neg);
+      if (shown.length >= 2) break;
     }
-    return parts.join("");
+    shown.forEach((t, i) => {
+      const el = document.createElement('div');
+      el.className = `toast toast--${t.cls}`;
+      el.style.animationDelay = `${i * 160}ms`;
+      el.innerHTML = `<span class="toast__icon">${t.icon}</span><span class="toast__text">${t.text}</span>`;
+      toastContainer.appendChild(el);
+      const delay = 1800 + i * 160;
+      setTimeout(() => el.classList.add('toast--out'), delay);
+      setTimeout(() => el.remove(), delay + 500);
+    });
   }
 
+  // ─── 渲染角色卡（只展示名字、简介、银钱符号、故事 flag）────────
   function renderRole(state) {
     const role = getRole(state.roleId);
     if (!role) {
@@ -65,75 +78,58 @@
       return;
     }
 
-    const kv = (k, v) => `
-      <div class="kv">
-        <div class="kv__k">${k}</div>
-        <div class="kv__v">${v}</div>
-      </div>
-    `;
-
     const tags = [];
     if (state.flags?.have_jade) tags.push(`<span class="tag warn">持有残玉</span>`);
-    if (state.flags?.marriage) tags.push(`<span class="tag good">婚约</span>`);
-    if (state.flags?.alliance) tags.push(`<span class="tag good">同盟</span>`);
+    if (state.flags?.marriage)  tags.push(`<span class="tag good">婚约</span>`);
+    if (state.flags?.alliance)  tags.push(`<span class="tag good">同盟</span>`);
+
+    const money = Math.max(0, Math.min(10, Math.round(state.stats?.money ?? 0)));
+    const moneyBar = '◈'.repeat(money) + '◇'.repeat(10 - money);
 
     els.roleCard.innerHTML = `
       <div class="role">
         <div class="role__name">${role.name}</div>
         <div class="role__desc">${role.desc}</div>
-        <div class="role__grid">
-          ${STAT_DEFS.map((def) => kv(def.label, state.stats?.[def.key] ?? 0)).join("")}
+        <div class="role__money">
+          <div class="role__money-label">银钱</div>
+          <div class="role__money-bar">${moneyBar}</div>
         </div>
-        ${tags.length ? `<div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:2px;">${tags.join("")}</div>` : ""}
+        ${tags.length ? `<div class="role__flags">${tags.join("")}</div>` : ""}
       </div>
     `;
   }
 
+  // ─── 渲染记忆日志 ─────────────────────────────────────────────
   function renderLog(state) {
     const items = (state.history || []).slice(-40).reverse();
     if (items.length === 0) {
-      els.log.innerHTML = `<div class="logline"><div class="logline__text">暂无日志。</div></div>`;
+      els.log.innerHTML = `<div class="logline"><div class="logline__text">暂无记录。</div></div>`;
       return;
     }
     els.log.innerHTML = items
-      .map(
-        (x) => `
+      .map(x => `
         <div class="logline">
           <div class="logline__time">${x.t}</div>
           <div class="logline__text">${escapeHtml(x.text)}</div>
         </div>
-      `
-      )
+      `)
       .join("");
   }
 
   function escapeHtml(s) {
     return String(s)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
+      .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;").replaceAll("'","&#039;");
   }
 
-  function tagFromChoice(choice) {
-    const parts = [];
-    const eff = choice.effects?.stats || null;
-    if (eff) {
-      for (const def of STAT_DEFS) {
-        const dv = eff[def.key];
-        if (!dv) continue;
-        const cls = dv > 0 ? "good" : "bad";
-        const txt = `${def.label}${dv > 0 ? "+" : ""}${dv}`;
-        parts.push(`<span class="tag ${cls}">${txt}</span>`);
-      }
-    }
-    if (choice.tags) {
-      for (const t of choice.tags) parts.push(`<span class="tag">${escapeHtml(t)}</span>`);
-    }
-    return parts.join("");
+  function replayAnim(el) {
+    if (!el) return;
+    el.style.animation = "none";
+    el.offsetHeight;
+    el.style.animation = "";
   }
 
+  // ─── 渲染场景 ─────────────────────────────────────────────────
   function renderScene(state) {
     const scene = getScene(state.sceneId);
     if (!scene) {
@@ -148,18 +144,17 @@
     els.sceneTitle.textContent = scene.title;
     const text = typeof scene.text === "function" ? scene.text(state) : scene.text;
     els.sceneText.textContent = text || "";
+    [els.sceneTitle, els.sceneText, els.sceneImageWrap].forEach(replayAnim);
 
     const imgSrc = scene.image || "";
-    if (els.sceneImageWrap && els.sceneImage && imgSrc) {
+    if (imgSrc) {
       els.sceneImage.src = imgSrc;
       els.sceneImage.alt = scene.title || "";
       els.sceneImageWrap.style.display = "";
-    } else if (els.sceneImageWrap) {
+    } else {
       els.sceneImageWrap.style.display = "none";
-      if (els.sceneImage) {
-        els.sceneImage.removeAttribute("src");
-        els.sceneImage.alt = "";
-      }
+      els.sceneImage.removeAttribute("src");
+      els.sceneImage.alt = "";
     }
 
     const available = listAvailableChoices(scene, state);
@@ -169,12 +164,11 @@
       const btn = document.createElement("button");
       btn.className = `btn choice ${scene.ending ? "btn--primary" : ""}`;
       btn.type = "button";
-      btn.innerHTML = `
-        <div class="choice__label">${escapeHtml(choice.label)}</div>
-        <div class="choice__meta">${tagFromChoice(choice)}</div>
-      `;
+      // 只显示选项文字，不预告效果
+      btn.innerHTML = `<div class="choice__label">${escapeHtml(choice.label)}</div>`;
       btn.addEventListener("click", () => {
         state = step(state, choice);
+        showToast(state.lastDelta);
         saveToLocal(state);
         renderAll(state);
       });
@@ -183,19 +177,18 @@
   }
 
   function renderAll(state) {
-    els.stats.innerHTML = statHtml(state);
-
     renderRole(state);
     renderLog(state);
     renderScene(state);
   }
 
+  // ─── 存档 ─────────────────────────────────────────────────────
   function safeHydrateState(raw) {
     if (!raw || typeof raw !== "object") return null;
     if (!raw.sceneId || !raw.stats) return null;
     raw.lastDelta = raw.lastDelta || {};
-    raw.flags = raw.flags || {};
-    raw.history = raw.history || [];
+    raw.flags     = raw.flags     || {};
+    raw.history   = raw.history   || [];
     return raw;
   }
 
@@ -205,27 +198,19 @@
       saveToLocal(s);
       setState(s);
     });
-
     els.btnSave.addEventListener("click", () => {
       saveToLocal(getState());
       flash(els.btnSave, "已保存");
     });
-
     els.btnLoad.addEventListener("click", () => {
       const raw = safeHydrateState(loadFromLocal());
-      if (!raw) {
-        alert("没有找到可用存档。");
-        return;
-      }
+      if (!raw) { alert("没有找到可用存档。"); return; }
       setState(raw);
       flash(els.btnLoad, "已读取");
     });
-
     els.btnExport.addEventListener("click", () => {
-      const s = getState();
-      downloadJson(`rpg-save-${Date.now()}.json`, s);
+      downloadJson(`rpg-save-${Date.now()}.json`, getState());
     });
-
     els.importFile.addEventListener("change", async (e) => {
       const file = e.target.files?.[0];
       e.target.value = "";
@@ -252,14 +237,10 @@
     els.buildInfo.textContent = `Build ${GAME_META.build}`;
 
     let state = safeHydrateState(loadFromLocal()) || newGame();
-    // First launch: ensure title screen
     if (!getScene(state.sceneId)) state.sceneId = "start";
 
     const getState = () => state;
-    const setState = (s) => {
-      state = s;
-      renderAll(state);
-    };
+    const setState = (s) => { state = s; renderAll(state); };
 
     wireControls(getState, setState);
     renderAll(state);
@@ -268,4 +249,3 @@
 
   init();
 })();
-

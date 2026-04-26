@@ -2,8 +2,13 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>《逐玉》视觉小说原型（前三章）</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0e0710" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>《逐玉》· 视觉小说</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -11,9 +16,8 @@
       <header class="topbar">
         <div class="brand">
           <div class="brand__title">《逐玉》</div>
-          <div class="brand__subtitle">视觉小说原型 · 选择推动剧情</div>
+          <div class="brand__subtitle">古风乙女 · 视觉小说</div>
         </div>
-        <div class="stats" id="stats"></div>
       </header>
 
       <main class="main">
@@ -21,12 +25,12 @@
           <div class="panel__head">
             <div class="chapter" id="chapter"></div>
             <div class="panel__actions">
-              <button class="btn btn--ghost" id="btnNew">新开一局</button>
-              <button class="btn btn--ghost" id="btnSave">保存</button>
-              <button class="btn btn--ghost" id="btnLoad">读取</button>
-              <button class="btn btn--ghost" id="btnExport">导出存档</button>
+              <button class="btn btn--ghost" id="btnNew">新局</button>
+              <button class="btn btn--ghost" id="btnSave">存档</button>
+              <button class="btn btn--ghost" id="btnLoad">读档</button>
+              <button class="btn btn--ghost" id="btnExport">导出</button>
               <label class="btn btn--ghost file">
-                导入存档
+                导入
                 <input type="file" id="importFile" accept="application/json" />
               </label>
             </div>
@@ -41,38 +45,37 @@
           </article>
 
           <section class="choices">
-            <div class="choices__title">你的选择</div>
+            <div class="choices__title">· 命运抉择 ·</div>
             <div class="choices__list" id="choices"></div>
           </section>
         </section>
 
         <aside class="sidebar">
           <section class="card">
-            <div class="card__title">角色</div>
+            <div class="card__title">· 人 物 ·</div>
             <div class="card__body" id="roleCard"></div>
           </section>
 
           <section class="card">
-            <div class="card__title">日志</div>
+            <div class="card__title">· 记 忆 ·</div>
             <div class="card__body log" id="log"></div>
           </section>
 
           <section class="card">
-            <div class="card__title">提示</div>
+            <div class="card__title">· 说 明 ·</div>
             <div class="card__body hint">
-              <div>这是一个零构建（无 npm）可直接运行的 Demo。</div>
-              <div>双击选择按钮也不会跳过动画；每次选择都会写入日志与存档。</div>
-              <div class="hint__small">如需发布，使用任意静态托管即可（GitHub Pages / Nginx / IIS）。</div>
+              <div>无需构建，直接在浏览器中运行。</div>
+              <div>每次选择皆留痕迹，存档随时可取。</div>
+              <div class="hint__small" id="buildInfo"></div>
             </div>
           </section>
         </aside>
       </main>
 
       <footer class="footer">
-        <div class="footer__left">本 Demo 仅示例玩法结构：剧情节点、条件分支、属性变化、存档系统。</div>
+        <div class="footer__left">《逐玉》· 剧情节点 · 条件分支 · 属性变化 · 存档系统</div>
         <div class="footer__right">
-          <span class="pill">本地存档：localStorage</span>
-          <span class="pill" id="buildInfo"></span>
+          <span class="pill">本地存档</span>
         </div>
       </footer>
     </div>
